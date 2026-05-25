@@ -52,6 +52,18 @@ exposed via `swc-workload --version`. Each release is tagged in git
 as `v<MAJOR>.<MINOR>.<PATCH>` (e.g. `v1.1.0`); pin an install with
 `pipx install git+...@v1.1.0`.
 
+Releases are cut by manually triggering the `Release` workflow — it
+does not run automatically on push. Either use the **Run workflow**
+button on the [Actions tab](../../actions/workflows/release.yml), or
+the CLI:
+
+```
+gh workflow run release.yml -f bump=patch   # or: minor, major
+```
+
+The workflow bumps `_version.py`, commits, tags `v<new>`, pushes, and
+publishes a GitHub Release.
+
 ## Tests
 
 Create a virtualenv first, then install the package into it in editable
