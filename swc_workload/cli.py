@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """swc-workload — pure tree manager for workload.json.
 
 Path-driven: takes `--workload <folder>` on every op. The folder must

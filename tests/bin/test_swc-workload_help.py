@@ -1,23 +1,15 @@
-"""Tier 1 — direct tests against `bin/swc-workload --help` and subcommand help.
+"""Tier 1 — direct tests against `swc-workload --help` and subcommand help.
 
-These confirm REQ-29 holds at the bottom layer; the swc-tier equivalents
-(swc workload --help) are covered separately and exercise the wrapper's
-preamble + delegation.
+Invoked as `python -m swc_workload` (see conftest) so the test runs
+against the package code regardless of whether the entry point has
+been installed.
 """
 
-import subprocess
-import sys
-from pathlib import Path
-
-SWC_WORKLOAD = Path(__file__).resolve().parent.parent.parent / "bin" / "swc-workload"
+from conftest import run_swc_workload
 
 
 def _run(*args):
-    return subprocess.run(
-        [sys.executable, str(SWC_WORKLOAD), *args],
-        capture_output=True,
-        text=True,
-    )
+    return run_swc_workload(*args)
 
 
 def test_top_level_help_lists_all_ops():
