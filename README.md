@@ -1,6 +1,6 @@
 # swc-workload
 
-A standalone Claude Code plugin that ships the `swc_workload` CLI — a
+A standalone Claude Code plugin that ships the `swc-workload` CLI — a
 path-driven tree manager for `workload.json` files.
 
 This is the binary half of [Sessionless Workload Context (SWC)](https://github.com/ctracey/swc),
@@ -10,16 +10,16 @@ its `swc workload <op>` wrapper.
 
 ## What it does
 
-`swc_workload` manages a hierarchical workload tree persisted as
+`swc-workload` manages a hierarchical workload tree persisted as
 `workload.json`. It is purely a tree manager: it knows nothing about git
 branches, context resolution, or `.swc/_meta.json`. Every operation
 takes `--workload <folder>` and operates on `<folder>/workload.json`.
 
 ```
-python3 bin/swc_workload <op> --workload <folder> [args]
+python3 bin/swc-workload <op> --workload <folder> [args]
 ```
 
-Run `python3 bin/swc_workload --help` for the full subcommand list.
+Run `python3 bin/swc-workload --help` for the full subcommand list.
 
 ## Installation as a Claude Code plugin
 
@@ -30,7 +30,7 @@ directly into your plugins directory:
 git clone https://github.com/ctracey/swc-workload-cli.git
 ```
 
-Once loaded the CLI is available at `bin/swc_workload` inside the plugin
+Once loaded the CLI is available at `bin/swc-workload` inside the plugin
 directory.
 
 ## Tests

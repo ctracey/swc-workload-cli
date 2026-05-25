@@ -1,11 +1,11 @@
-"""Tier 1 — direct tests against `bin/swc_workload --workload <tmp-folder>`.
+"""Tier 1 — direct tests against `bin/swc-workload --workload <tmp-folder>`.
 
 Read / report ops (list / show / find / summary), JSON output,
 schema validation, and JSON-decode error path. These don't depend on
 branch resolution so they're covered directly.
 
 The `--workload` contract is folder-path: tests pass `tmp_path` (the
-folder); swc_workload resolves <folder>/workload.json internally.
+folder); swc-workload resolves <folder>/workload.json internally.
 """
 
 import json
@@ -326,12 +326,12 @@ def test_load_workload_json_decode_error_reports_line_and_column(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# init at the swc_workload layer — pure file creation
+# init at the swc-workload layer — pure file creation
 # ---------------------------------------------------------------------------
 
 
 def test_init_creates_workload_json_inside_supplied_folder(swcw):
-    """swc_workload init creates workload.json inside --workload <folder>.
+    """swc-workload init creates workload.json inside --workload <folder>.
 
     No branch awareness; the folder must already exist (per the new contract).
     """
@@ -345,7 +345,7 @@ def test_init_creates_workload_json_inside_supplied_folder(swcw):
 
 
 def test_init_refuses_to_overwrite_existing_file(swcw_ready):
-    """swc_workload init refuses to overwrite an existing workload.json."""
+    """swc-workload init refuses to overwrite an existing workload.json."""
     run, workload = swcw_ready
     original = workload.read_text()
     result = run("init")
@@ -355,7 +355,7 @@ def test_init_refuses_to_overwrite_existing_file(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# Missing-workload path at the swc_workload layer (non-init)
+# Missing-workload path at the swc-workload layer (non-init)
 # ---------------------------------------------------------------------------
 
 
@@ -407,7 +407,7 @@ def test_init_requires_folder_to_exist(tmp_path):
 
 
 # ---------------------------------------------------------------------------
-# Pass 9 — `exists` at the swc_workload layer: pure file-presence check
+# Pass 9 — `exists` at the swc-workload layer: pure file-presence check
 #
 # Lenient contract: returns false (exit 0) for missing folder, wrong-type
 # folder, or folder-without-workload.json. Returns true only when the

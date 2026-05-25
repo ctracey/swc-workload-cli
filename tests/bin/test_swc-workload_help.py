@@ -1,4 +1,4 @@
-"""Tier 1 — direct tests against `bin/swc_workload --help` and subcommand help.
+"""Tier 1 — direct tests against `bin/swc-workload --help` and subcommand help.
 
 These confirm REQ-29 holds at the bottom layer; the swc-tier equivalents
 (swc workload --help) are covered separately and exercise the wrapper's
@@ -9,7 +9,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-SWC_WORKLOAD = Path(__file__).resolve().parent.parent.parent / "bin" / "swc_workload"
+SWC_WORKLOAD = Path(__file__).resolve().parent.parent.parent / "bin" / "swc-workload"
 
 
 def _run(*args):
@@ -41,7 +41,7 @@ def test_subcommand_help_describes_flags():
 
 def test_subcommand_help_works_without_workload_flag():
     """argparse short-circuits --help before requiring --workload, so
-    `swc_workload list --help` exits 0 without needing a workload path.
+    `swc-workload list --help` exits 0 without needing a workload path.
     """
     result = _run("list", "--help")
     assert result.returncode == 0
