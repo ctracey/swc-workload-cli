@@ -2,6 +2,7 @@
 
 ![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)
 ![License](https://img.shields.io/badge/license-MIT-green)
+![Version](https://img.shields.io/github/v/tag/ctracey/swc-workload-cli?filter=v*&label=version)
 
 A pip-installable CLI — a path-driven tree manager for `workload.json` files.
 
