@@ -24,6 +24,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
+from . import __version__
+
 # Status markers used in the persisted JSON tree.
 STATUS_NOT_STARTED = "not-started"
 STATUS_IN_PROGRESS = "in-progress"
@@ -896,7 +898,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = argparse.ArgumentParser(
         prog="swc workload",
-        description="Manage the workload tree — work items, status, ordering.",
+        description=f"Manage the workload tree — work items, status, ordering. (version {__version__})",
         epilog=None if hide_workload else (
             "Folder contract: every op operates on workload.json inside the "
             "folder passed via --workload. The folder must already exist. For "
@@ -904,6 +906,12 @@ def build_parser() -> argparse.ArgumentParser:
             "wrapper, which resolves the folder from the current branch and "
             "forwards the op here."
         ),
+    )
+    p.add_argument(
+        "-v",
+        "--version",
+        action="version",
+        version=f"%(prog)s {__version__}",
     )
 
     sub = p.add_subparsers(dest="op", required=True, metavar="<op>")

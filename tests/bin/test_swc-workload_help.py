@@ -7,6 +7,8 @@ been installed.
 
 from conftest import run_swc_workload
 
+from swc_workload import __version__
+
 
 def _run(*args):
     return run_swc_workload(*args)
@@ -20,6 +22,30 @@ def test_top_level_help_lists_all_ops():
         assert op in out, f"top-level help missing {op!r}"
     # Should mention the required --workload flag.
     assert "--workload" in out or "swc workload" in out.lower()
+
+
+def test_top_level_help_shows_version():
+    result = _run("--help")
+    assert result.returncode == 0
+    assert __version__ in result.stdout, (
+        f"top-level --help should show version {__version__!r}"
+    )
+
+
+def test_short_version_flag():
+    result = _run("-v")
+    assert result.returncode == 0
+    assert __version__ in result.stdout, (
+        f"`-v` should print version {__version__!r}, got {result.stdout!r}"
+    )
+
+
+def test_long_version_flag():
+    result = _run("--version")
+    assert result.returncode == 0
+    assert __version__ in result.stdout, (
+        f"`--version` should print version {__version__!r}, got {result.stdout!r}"
+    )
 
 
 def test_subcommand_help_describes_flags():
