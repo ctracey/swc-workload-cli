@@ -215,14 +215,18 @@ def find_by_ref(items: list[dict], ref: str) -> Optional[tuple[dict, list[dict],
 
     Returns (item, parent_list, index_in_parent, number) or None.
     """
-    is_number = bool(re.fullmatch(r"\d+(?:\.\d+)*", ref))
-    target_number = tuple(int(p) for p in ref.split(".")) if is_number else None
+    # ID match takes precedence: an all-digit hash prefix (e.g. "8277899")
+    # is also a valid numeric path string, so checking IDs first avoids
+    # misreading the hash as a path reference.
     for item, parent_list, idx, number in iter_items(items):
-        if is_number:
+        if item["id"] == ref:
+            return item, parent_list, idx, number
+
+    if re.fullmatch(r"\d+(?:\.\d+)*", ref):
+        target_number = tuple(int(p) for p in ref.split("."))
+        for item, parent_list, idx, number in iter_items(items):
             if number == target_number:
                 return item, parent_list, idx, number
-        elif item["id"] == ref:
-            return item, parent_list, idx, number
     return None
 
 
