@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "swc-workload"
-version = "1.0.0"
+dynamic = ["version"]
 description = "Path-driven tree manager for workload.json files."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -24,6 +24,9 @@ swc-workload = "swc_workload.cli:main"
 [project.urls]
 Homepage = "https://github.com/ctracey/swc-workload-cli"
 Repository = "https://github.com/ctracey/swc-workload-cli"
+
+[tool.hatch.version]
+path = "swc_workload/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["swc_workload"]
