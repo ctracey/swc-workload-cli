@@ -1,5 +1,8 @@
 # swc-workload
 
+![Python](https://img.shields.io/badge/python-%3E%3D3.9-blue)
+![License](https://img.shields.io/badge/license-MIT-green)
+
 A pip-installable CLI — a path-driven tree manager for `workload.json` files.
 
 This is the binary half of [Sessionless Workload Context (SWC)](https://github.com/ctracey/swc),
@@ -30,6 +33,23 @@ pipx install git+https://github.com/ctracey/swc-workload-cli.git
 
 Pin a version with `@<tag>` or `@<commit>`. Plain `pip install
 git+...` works too (use a venv to avoid polluting your system Python).
+
+## Versioning
+
+`swc-workload` follows [Semantic Versioning](https://semver.org/):
+`MAJOR.MINOR.PATCH`.
+
+- **MAJOR** — incompatible changes to CLI surface or `workload.json`
+  on-disk format.
+- **MINOR** — backwards-compatible new subcommands, flags, or
+  behaviors.
+- **PATCH** — backwards-compatible bug fixes and documentation-only
+  updates.
+
+The canonical version lives in `swc_workload/_version.py` and is
+exposed via `swc-workload --version`. Each release is tagged in git
+as `v<MAJOR>.<MINOR>.<PATCH>` (e.g. `v1.1.0`); pin an install with
+`pipx install git+...@v1.1.0`.
 
 ## Tests
 
