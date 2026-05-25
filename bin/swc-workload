@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""swc_workload — pure tree manager for workload.json.
+"""swc-workload — pure tree manager for workload.json.
 
 Path-driven: takes `--workload <folder>` on every op. The folder must
 contain (or, for `init`, will contain) a `workload.json` file — the file
@@ -9,7 +9,7 @@ name is convention-locked. Knows nothing about git branches,
 forwards the op here.
 
 Invocation:
-    python3 bin/swc_workload <op> --workload <folder> [args]
+    python3 bin/swc-workload <op> --workload <folder> [args]
 """
 
 from __future__ import annotations
@@ -174,7 +174,7 @@ def make_id(title: str, existing_ids: set[str]) -> str:
 
     Note: the original solution.md scheme included `branch` in the payload to
     anchor IDs to the workload they came from. With the path-driven split,
-    `swc_workload` no longer knows the branch. The workload path itself is
+    `swc-workload` no longer knows the branch. The workload path itself is
     a sufficient anchor at this layer; if a stronger anchor is ever needed it
     can be passed by `swc` as part of the payload.
     """
@@ -841,7 +841,7 @@ def cmd_summary(args) -> int:
 def cmd_exists(args) -> int:
     """`exists`: lenient file-presence check for workload.json inside --workload.
 
-    Unique among swc_workload ops: does NOT enforce the strict folder
+    Unique among swc-workload ops: does NOT enforce the strict folder
     contract (folder must exist, must be a directory). `exists` is a
     question, never an error — every "no" case returns false with exit 0
     and nothing on stderr. This lets callers probe non-destructively
@@ -937,7 +937,7 @@ def build_parser() -> argparse.ArgumentParser:
             "workload.json, so callers can probe non-destructively."
         ),
         epilog=None if hide_workload else (
-            "Unique among swc_workload ops: does NOT enforce the strict folder "
+            "Unique among swc-workload ops: does NOT enforce the strict folder "
             "contract — every other op errors if --workload is missing or not "
             "a directory."
         ),
