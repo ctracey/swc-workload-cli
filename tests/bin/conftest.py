@@ -1,9 +1,10 @@
 """Shared fixtures for swc-workload CLI tests.
 
-Direct tests against `bin/swc-workload`. No git, no _meta.json — tests pass
-`--workload <tmp-path>` explicitly. The CLI is invoked via subprocess so the
-argparse surface (and the exit code / stderr behaviour) is covered
-end-to-end.
+Tests pass `--workload <tmp-path>` explicitly. The CLI is invoked as
+`python -m swc_workload` so the argparse surface (and the exit code /
+stderr behaviour) is covered end-to-end without depending on an
+installed entry-point script. PYTHONPATH is set so the package resolves
+whether or not `pip install -e .` has been run.
 """
 
 from __future__ import annotations
@@ -15,12 +16,15 @@ from pathlib import Path
 
 import pytest
 
-PLUGIN_ROOT = Path(__file__).resolve().parent.parent.parent
-SWC_WORKLOAD = PLUGIN_ROOT / "bin" / "swc-workload"
+REPO_ROOT = Path(__file__).resolve().parent.parent.parent
 
 
 def _run(cmd: list[str], cwd: Path | None = None, env: dict | None = None):
     final_env = os.environ.copy()
+    existing = final_env.get("PYTHONPATH", "")
+    final_env["PYTHONPATH"] = (
+        str(REPO_ROOT) + (os.pathsep + existing if existing else "")
+    )
     if env:
         final_env.update(env)
     return subprocess.run(
@@ -33,7 +37,7 @@ def _run(cmd: list[str], cwd: Path | None = None, env: dict | None = None):
 
 
 def run_swc_workload(*args, workload: Path | None = None):
-    """Invoke `bin/swc-workload` as a subprocess.
+    """Invoke `python -m swc_workload` as a subprocess.
 
     `args` is the full arg list as passed on the command line — including
     `--workload` if the test wants to position it elsewhere. If `workload`
@@ -42,7 +46,7 @@ def run_swc_workload(*args, workload: Path | None = None):
     is folder-path: swc-workload resolves <folder>/workload.json
     internally.
     """
-    cmd = [sys.executable, str(SWC_WORKLOAD), *map(str, args)]
+    cmd = [sys.executable, "-m", "swc_workload", *map(str, args)]
     if workload is not None:
         cmd.extend(["--workload", str(workload)])
     return _run(cmd)

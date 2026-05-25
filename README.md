@@ -1,12 +1,10 @@
 # swc-workload
 
-A standalone Claude Code plugin that ships the `swc-workload` CLI — a
-path-driven tree manager for `workload.json` files.
+A pip-installable CLI — a path-driven tree manager for `workload.json` files.
 
 This is the binary half of [Sessionless Workload Context (SWC)](https://github.com/ctracey/swc),
-extracted so other tools and plugins can depend on it without pulling in
-the full SWC skills suite. The companion `swc` plugin uses this CLI for
-its `swc workload <op>` wrapper.
+extracted so other tools can depend on it without pulling in the full
+SWC skills suite.
 
 ## What it does
 
@@ -16,35 +14,47 @@ branches, context resolution, or `.swc/_meta.json`. Every operation
 takes `--workload <folder>` and operates on `<folder>/workload.json`.
 
 ```
-python3 bin/swc-workload <op> --workload <folder> [args]
+swc-workload <op> --workload <folder> [args]
 ```
 
-Run `python3 bin/swc-workload --help` for the full subcommand list.
+Run `swc-workload --help` for the full subcommand list.
 
-## Installation as a Claude Code plugin
+## Installation
 
-Add this plugin via your preferred plugin marketplace, or clone it
-directly into your plugins directory:
+Install directly from git with [pipx](https://pipx.pypa.io/), which puts
+the `swc-workload` command on your PATH in an isolated venv:
 
 ```
-git clone https://github.com/ctracey/swc-workload-cli.git
+pipx install git+https://github.com/ctracey/swc-workload-cli.git
 ```
 
-Once loaded the CLI is available at `bin/swc-workload` inside the plugin
-directory.
+Pin a version with `@<tag>` or `@<commit>`. Plain `pip install
+git+...` works too (use a venv to avoid polluting your system Python).
 
 ## Tests
+
+Create a virtualenv first, then install the package into it in editable
+mode. The venv isolates this install from any global or pipx-installed
+`swc-workload`, so the suite reliably exercises the local source:
+
+```
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+Then run the suite:
 
 ```
 pytest tests/
 ```
 
-Tests invoke the CLI via subprocess against per-test temp workload
-folders — no git or other plugin state required.
+The CLI tests invoke `python -m swc_workload` via `sys.executable`, so
+they always run against the Python (and editable install) of the
+active venv — never a `swc-workload` binary that happens to be on PATH.
+The entry-point smoke test in `tests/test_entry_point.py` verifies
+that `pip install -e .` registered the `swc-workload` console script;
+it fails with a clear "run `pip install -e .`" message if you skip
+the install step.
 
-## Relationship to the `swc` plugin
-
-The `swc` plugin (the full SWC suite) historically bundled its own copy
-of this CLI. As of the refactor that introduced this package, `swc`
-delegates to `swc-workload` when present and degrades gracefully when
-not.
+No git, network, or other external state required.
