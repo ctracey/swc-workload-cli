@@ -198,6 +198,56 @@ def test_list_with_ref_and_filter_scopes_to_subtree(swcw_ready):
     assert titles == ["b"]
 
 
+def test_list_filter_preserves_original_numbering(swcw_ready):
+    """A filtered match must keep its number from the full tree so the displayed
+    reference stays usable for downstream commands. Regression for the case
+    where filtered output was renumbered 1, 2, 3… losing positional anchoring."""
+    run, workload = swcw_ready
+    run("add", "a")
+    run("add", "b")
+    run("add", "c")
+    run("add", "c1", "to", "3")
+    run("add", "c2", "to", "3")
+    run("add", "c3", "to", "3")
+    run("start", "3.2")
+
+    # JSON form: deeply-nested match keeps its original 3.2 number.
+    result = run("list", "--filter", "status:in-progress", "--json")
+    assert result.returncode == 0, result.stderr
+    items = json.loads(result.stdout)["items"]
+    # `c` survives because 3.2 matches; only the matching child remains.
+    assert len(items) == 1
+    assert items[0]["number"] == "3"
+    assert items[0]["title"] == "c"
+    assert len(items[0]["children"]) == 1
+    assert items[0]["children"][0]["number"] == "3.2"
+    assert items[0]["children"][0]["title"] == "c2"
+
+    # Text form: same numbers visible to the eye.
+    result = run("list", "--filter", "status:in-progress")
+    assert result.returncode == 0, result.stderr
+    out = result.stdout
+    assert " 3 " in out
+    assert " 3.2 " in out
+
+
+def test_list_with_ref_and_filter_preserves_original_numbering(swcw_ready):
+    """Ref-scoped filtered output must also preserve full-tree numbers, so
+    references shown in the subtree match references shown in the full list."""
+    run, workload = swcw_ready
+    run("add", "parent")
+    run("add", "a", "to", "1")
+    run("add", "b", "to", "1")
+    run("add", "c", "to", "1")
+    run("start", "1.2")
+
+    result = run("list", "1", "--filter", "status:in-progress", "--json")
+    assert result.returncode == 0, result.stderr
+    items = json.loads(result.stdout)["items"]
+    assert items[0]["number"] == "1"
+    assert items[0]["children"][0]["number"] == "1.2"
+
+
 # ---------------------------------------------------------------------------
 # REQ-21 — summary
 # ---------------------------------------------------------------------------

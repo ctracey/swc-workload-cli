@@ -285,7 +285,7 @@ def render_text(items: list[dict], show_ids: bool = True) -> str:
 
     def walk(node_list, prefix):
         for idx, node in enumerate(node_list):
-            number = prefix + (idx + 1,)
+            number = node.get("_number") or (prefix + (idx + 1,))
             num_str = ".".join(str(n) for n in number)
             sym = STATUS_SYMBOLS.get(node["status"], SYM_NOT_STARTED)
             hash_part = f"({node['id']}) " if show_ids else ""
@@ -302,7 +302,7 @@ def to_json_tree(items: list[dict]) -> list[dict]:
     def walk(node_list, prefix):
         out = []
         for idx, node in enumerate(node_list):
-            number = prefix + (idx + 1,)
+            number = node.get("_number") or (prefix + (idx + 1,))
             out.append({
                 "id": node["id"],
                 "number": ".".join(str(n) for n in number),
@@ -347,12 +347,20 @@ def parse_filter(spec: str) -> tuple[str, list[str]]:
     return key, values
 
 
-def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], excludes: list[tuple[str, list[str]]]) -> list[dict]:
-    """Return a deep-copied tree containing only items that match include filters
-    AND do not match exclude filters. Parents are kept if any descendant matches,
-    but children that don't match are dropped.
+def apply_filters(
+    items_with_numbers: list[tuple[dict, tuple[int, ...]]],
+    filters: list[tuple[str, list[str]]],
+    excludes: list[tuple[str, list[str]]],
+) -> list[dict]:
+    """Return a tree containing only items that match include filters AND do
+    not match exclude filters. Parents are kept if any descendant matches, but
+    children that don't match are dropped.
 
-    For an empty filter set: return all items.
+    Input: list of (node, number) pairs — number is the node's position in the
+    unfiltered tree. When at least one filter applies, returns new node dicts
+    annotated with `_number` so renderers can display the original references
+    rather than reflowed positional ones. With no filters, returns the original
+    nodes unchanged.
     """
     def matches(node: dict) -> bool:
         for key, values in filters:
@@ -363,23 +371,27 @@ def apply_filters(items: list[dict], filters: list[tuple[str, list[str]]], exclu
                 return False
         return True
 
-    def walk(node_list):
+    def walk(pairs):
         out = []
-        for node in node_list:
-            kids = walk(node.get("children", []))
-            self_ok = matches(node)
-            if self_ok or kids:
+        for node, number in pairs:
+            child_pairs = [
+                (c, number + (i + 1,))
+                for i, c in enumerate(node.get("children", []))
+            ]
+            kids = walk(child_pairs)
+            if matches(node) or kids:
                 out.append({
                     "id": node["id"],
                     "title": node["title"],
                     "status": node["status"],
                     "children": kids,
+                    "_number": number,
                 })
         return out
 
     if not filters and not excludes:
-        return items
-    return walk(items)
+        return [node for node, _ in items_with_numbers]
+    return walk(items_with_numbers)
 
 
 # ---------------------------------------------------------------------------
@@ -746,7 +758,7 @@ def cmd_list(args) -> int:
         if found is None:
             raise CLIError(f"item {args.ref} not found")
         item, _, _, number = found
-        filtered = apply_filters([item], filters, excludes)
+        filtered = apply_filters([(item, number)], filters, excludes)
         if args.json:
             out = [_render_item_json(n, number) for n in filtered]
             print(json.dumps({"items": out}))
@@ -754,7 +766,8 @@ def cmd_list(args) -> int:
             print("\n".join(_render_item_text(n, number, show_ids=args.show_ids) for n in filtered))
         return 0
 
-    filtered = apply_filters(items, filters, excludes)
+    top_pairs = [(item, (i + 1,)) for i, item in enumerate(items)]
+    filtered = apply_filters(top_pairs, filters, excludes)
     if args.json:
         print(json.dumps({"items": to_json_tree(filtered)}))
     else:
@@ -763,13 +776,14 @@ def cmd_list(args) -> int:
 
 
 def _render_item_json(item: dict, number: tuple[int, ...]) -> dict:
+    item_number = item.get("_number") or number
     return {
         "id": item["id"],
-        "number": ".".join(str(n) for n in number),
+        "number": ".".join(str(n) for n in item_number),
         "title": item["title"],
         "status": item["status"],
         "children": [
-            _render_item_json(c, number + (i + 1,))
+            _render_item_json(c, item_number + (i + 1,))
             for i, c in enumerate(item.get("children", []))
         ],
     }
@@ -777,18 +791,20 @@ def _render_item_json(item: dict, number: tuple[int, ...]) -> dict:
 
 def _render_item_text(item: dict, number: tuple[int, ...], show_ids: bool) -> str:
     lines: list[str] = []
+    root_number = item.get("_number") or number
 
     def walk(node, n):
-        num_str = ".".join(str(x) for x in n)
+        node_n = node.get("_number") or n
+        num_str = ".".join(str(x) for x in node_n)
         sym = STATUS_SYMBOLS.get(node["status"], SYM_NOT_STARTED)
         hash_part = f"({node['id']}) " if show_ids else ""
         # Indent by depth relative to the root being shown (root depth = 0).
-        depth = len(n) - len(number)
+        depth = len(node_n) - len(root_number)
         lines.append(f"{'  ' * depth}{sym} {num_str} {hash_part}{node['title']}")
         for i, c in enumerate(node.get("children", [])):
-            walk(c, n + (i + 1,))
+            walk(c, node_n + (i + 1,))
 
-    walk(item, number)
+    walk(item, root_number)
     return "\n".join(lines)
 
 
