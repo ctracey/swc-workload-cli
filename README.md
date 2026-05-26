@@ -35,6 +35,22 @@ pipx install git+https://github.com/ctracey/swc-workload-cli.git
 Pin a version with `@<tag>` or `@<commit>`. Plain `pip install
 git+...` works too (use a venv to avoid polluting your system Python).
 
+## Upgrading
+
+To get the latest version of the cli tool from the originally-installed git ref:
+
+```
+pipx upgrade swc-workload
+```
+
+To move to a specific tag (or switch refs), reinstall with `--force`:
+
+```
+pipx install --force git+https://github.com/ctracey/swc-workload-cli.git@v1.1.3
+```
+
+Check the installed version with `swc-workload --version`.
+
 ## Versioning
 
 `swc-workload` follows [Semantic Versioning](https://semver.org/):
