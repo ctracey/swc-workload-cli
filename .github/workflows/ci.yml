@@ -21,5 +21,8 @@ jobs:
           pip install -e .
           pip install pytest
 
-      - name: Run tests
-        run: pytest tests/
+      - name: Run unit tests
+        run: pytest tests/unit/
+
+      - name: Run e2e tests
+        run: pytest tests/e2e/
