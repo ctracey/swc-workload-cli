@@ -95,15 +95,17 @@ pip install -e .
 Then run the suite:
 
 ```
-pytest tests/
+pytest tests/            # full suite
+pytest tests/unit/       # unit only
+pytest tests/e2e/        # end-to-end (subprocess) only
 ```
 
-The CLI tests invoke `python -m swc_workload` via `sys.executable`, so
-they always run against the Python (and editable install) of the
-active venv — never a `swc-workload` binary that happens to be on PATH.
-The entry-point smoke test in `tests/test_entry_point.py` verifies
-that `pip install -e .` registered the `swc-workload` console script;
-it fails with a clear "run `pip install -e .`" message if you skip
-the install step.
+The e2e tests under `tests/e2e/` invoke `python -m swc_workload` via
+`sys.executable`, so they always run against the Python (and editable
+install) of the active venv — never a `swc-workload` binary that
+happens to be on PATH. The entry-point smoke test in
+`tests/unit/test_entry_point.py` verifies that `pip install -e .`
+registered the `swc-workload` console script; it fails with a clear
+"run `pip install -e .`" message if you skip the install step.
 
 No git, network, or other external state required.
