@@ -25,11 +25,15 @@ Run `swc-workload --help` for the full subcommand list.
 
 ## Installation
 
-Install directly from git with [pipx](https://pipx.pypa.io/), which puts
-the `swc-workload` command on your PATH in an isolated venv:
+Install directly from git with [pipx](https://pipx.pypa.io/) (recommended)
+or [uv](https://github.com/astral-sh/uv); both put the `swc-workload`
+command on your PATH in an isolated venv:
 
 ```
 pipx install git+https://github.com/ctracey/swc-workload-cli.git
+
+# or:
+uv tool install git+https://github.com/ctracey/swc-workload-cli.git
 ```
 
 Pin a version with `@<tag>` or `@<commit>`. Plain `pip install
@@ -41,12 +45,18 @@ To get the latest version of the cli tool from the originally-installed git ref:
 
 ```
 pipx upgrade swc-workload
+
+# or:
+uv tool upgrade swc-workload
 ```
 
 To move to a specific tag (or switch refs), reinstall with `--force`:
 
 ```
 pipx install --force git+https://github.com/ctracey/swc-workload-cli.git@v1.1.3
+
+# or:
+uv tool install --force git+https://github.com/ctracey/swc-workload-cli.git@v1.1.3
 ```
 
 Check the installed version with `swc-workload --version`.
@@ -82,27 +92,31 @@ publishes a GitHub Release.
 
 ## Tests
 
-Create a virtualenv first, then install the package into it in editable
-mode. The venv isolates this install from any global or pipx-installed
-`swc-workload`, so the suite reliably exercises the local source:
+The repo pins its Python version in `.python-version` (also what CI
+uses). [uv](https://github.com/astral-sh/uv) reads that file, installs
+the interpreter if missing, creates the venv, and installs the package
+in one short flow:
 
 ```
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -e .
+uv venv                          # reads .python-version, installs the interpreter if needed
+uv pip install -e . pytest       # installs into .venv
 ```
 
-Then run the suite:
+The venv isolates this install from any global or pipx-installed
+`swc-workload`, so the suite reliably exercises the local source.
+
+Then run the suite via `uv run`, which always uses the project's
+`.venv` regardless of shell activation or `pytest` shims on PATH:
 
 ```
-pytest tests/            # full suite
-pytest tests/unit/       # unit only
-pytest tests/e2e/        # end-to-end (subprocess) only
+uv run pytest tests/            # full suite
+uv run pytest tests/unit/       # unit only
+uv run pytest tests/e2e/        # end-to-end (subprocess) only
 ```
 
 The e2e tests under `tests/e2e/` invoke `python -m swc_workload` via
 `sys.executable`, so they always run against the Python (and editable
-install) of the active venv — never a `swc-workload` binary that
+install) of the project venv — never a `swc-workload` binary that
 happens to be on PATH. The entry-point smoke test in
 `tests/unit/test_entry_point.py` verifies that `pip install -e .`
 registered the `swc-workload` console script; it fails with a clear
