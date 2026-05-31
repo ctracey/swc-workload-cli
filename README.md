@@ -12,6 +12,8 @@ This is the binary half of [Sessionless Workload Context (SWC)](https://github.c
 extracted so other tools can depend on it without pulling in the full
 SWC skills suite.
 
+Designed to work with [swc-workload MCP Server](https://github.com/ctracey/swc-workload-mcp/tree/docs/mcp-client-registration)
+
 ## What it does
 
 `swc-workload` manages a hierarchical workload tree persisted as
