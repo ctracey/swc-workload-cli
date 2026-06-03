@@ -320,6 +320,46 @@ def test_list_without_json_is_text(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
+# Pre-refactor safety net — `list --no-ids` hides hash IDs in text output.
+# This flag is documented and exposed but had no prior coverage. It will be
+# replaced by `--ids true|false` in the 1.2.0 meta work; this test pins the
+# current behaviour so the removal is a controlled break, not a silent one.
+# ---------------------------------------------------------------------------
+
+
+def test_list_no_ids_hides_hash_in_text_output(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "the thing")
+    listed = json.loads(run("list", "--json").stdout)["items"]
+    item_id = listed[0]["id"]
+
+    with_ids = run("list")
+    assert with_ids.returncode == 0
+    assert item_id in with_ids.stdout
+
+    no_ids = run("list", "--no-ids")
+    assert no_ids.returncode == 0
+    assert item_id not in no_ids.stdout
+    assert "the thing" in no_ids.stdout
+
+
+# ---------------------------------------------------------------------------
+# Pre-refactor safety net — `init --json` emits a structured payload pointing
+# at the freshly-created workload.json. Documented but uncovered.
+# ---------------------------------------------------------------------------
+
+
+def test_init_json_emits_workload_path(swcw):
+    run, workload = swcw
+    result = run("init", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert "workload" in payload
+    assert payload["workload"].endswith("workload.json")
+    assert workload.exists()
+
+
+# ---------------------------------------------------------------------------
 # REQ-31 — citation: hash shown in text output
 # ---------------------------------------------------------------------------
 
