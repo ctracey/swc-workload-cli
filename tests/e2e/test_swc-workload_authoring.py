@@ -525,6 +525,106 @@ def test_move_same_parent_source_after_target_lands_at_requested_position(swcw_r
     assert titles == ["2c", "2a", "2b"]
 
 
+# ---------------------------------------------------------------------------
+# Pre-refactor safety net — `move down` and `move bottom` directions.
+# Documented in `--help` but only `up` and `top` had test coverage.
+# ---------------------------------------------------------------------------
+
+
+def test_move_down_swaps_with_next_sibling(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "parent")
+    for label in ("a", "b", "c"):
+        run("add", label, "to", "1")
+
+    result = run("move", "1.1", "down")
+    assert result.returncode == 0, result.stderr
+
+    after = json.loads(run("list", "--json").stdout)["items"][0]["children"]
+    assert [c["title"] for c in after] == ["b", "a", "c"]
+
+
+def test_move_bottom_lands_at_last_slot(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "parent")
+    for label in ("a", "b", "c"):
+        run("add", label, "to", "1")
+
+    result = run("move", "1.1", "bottom")
+    assert result.returncode == 0, result.stderr
+
+    after = json.loads(run("list", "--json").stdout)["items"][0]["children"]
+    assert [c["title"] for c in after] == ["b", "c", "a"]
+    assert after[2]["number"] == "1.3"
+
+
+# ---------------------------------------------------------------------------
+# Pre-refactor safety net — `--json` output for mutation commands.
+# `_add_common()` advertises `--json` on every subcommand but coverage existed
+# only for read ops. Pin the current shapes so the refactor cannot silently
+# regress structured output for scripted callers.
+# ---------------------------------------------------------------------------
+
+
+def test_add_json_emits_id_title_status(swcw_ready):
+    run, workload = swcw_ready
+    result = run("add", "first", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert set(payload.keys()) >= {"id", "title", "status"}
+    assert payload["title"] == "first"
+    assert payload["status"] == "not-started"
+    assert len(payload["id"]) == 7
+
+
+def test_delete_json_emits_deleted_ref(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "one")
+    result = run("delete", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload == {"deleted": "1"}
+
+
+def test_rename_json_emits_id_and_new_title(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "one")
+    target_id = json.loads(run("list", "--json").stdout)["items"][0]["id"]
+
+    result = run("rename", "1", "renamed", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["id"] == target_id
+    assert payload["title"] == "renamed"
+
+
+def test_move_direction_json_emits_id_and_direction(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "parent")
+    for label in ("a", "b"):
+        run("add", label, "to", "1")
+    moved_id = json.loads(run("list", "--json").stdout)["items"][0]["children"][0]["id"]
+
+    result = run("move", "1.1", "down", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["id"] == moved_id
+    assert payload["direction"] == "down"
+
+
+def test_move_to_json_emits_id_and_target(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "a")
+    run("add", "b")
+    moved_id = json.loads(run("list", "--json").stdout)["items"][1]["id"]
+
+    result = run("move", "2", "to", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["id"] == moved_id
+    assert payload["target"] == "1"
+
+
 def test_move_same_parent_source_before_target_lands_at_requested_position(swcw_ready):
     """F-08 final-position semantics: `move 2.1 to 2.3` against [a, b, c] → [b, c, a].
 

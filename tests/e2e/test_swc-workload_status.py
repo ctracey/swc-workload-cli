@@ -88,6 +88,51 @@ def test_reset_on_done_re_opens_it(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
+# Pre-refactor safety net — `--json` output for status-transition commands.
+# `_add_common()` advertises `--json` on every subcommand but coverage existed
+# only for read ops. Pin the current shapes for `start`, `complete`, `reset`
+# so the refactor cannot silently regress structured output.
+# ---------------------------------------------------------------------------
+
+
+def test_start_json_emits_id_and_new_status(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "leaf")
+    target_id = json.loads(run("list", "--json").stdout)["items"][0]["id"]
+
+    result = run("start", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["id"] == target_id
+    assert payload["status"] == "in-progress"
+
+
+def test_complete_json_emits_id_and_new_status(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "leaf")
+    target_id = json.loads(run("list", "--json").stdout)["items"][0]["id"]
+
+    result = run("complete", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["id"] == target_id
+    assert payload["status"] == "done"
+
+
+def test_reset_json_emits_id_and_new_status(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "leaf")
+    run("complete", "1")
+    target_id = json.loads(run("list", "--json").stdout)["items"][0]["id"]
+
+    result = run("reset", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["id"] == target_id
+    assert payload["status"] == "not-started"
+
+
+# ---------------------------------------------------------------------------
 # F-03 (a) — parent marked done with undone children warns on stderr
 # ---------------------------------------------------------------------------
 
