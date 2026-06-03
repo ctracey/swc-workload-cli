@@ -8,7 +8,7 @@ all-digit hashes are unreachable by reference.
 
 from __future__ import annotations
 
-from swc_workload.cli import find_by_ref
+from swc_workload.tree import find_by_ref
 
 
 def _item(item_id: str, title: str, children=None) -> dict:
