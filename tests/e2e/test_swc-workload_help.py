@@ -48,6 +48,26 @@ def test_long_version_flag():
     )
 
 
+def test_version_flag_outputs_bare_pinned_string():
+    """Pin the exact stripped output to the literal `1.2.0` — not via
+    `__version__` — so a regression on either the version bump or the
+    bare-format (no `swc workload ` prefix) is caught. Per
+    cli-change-spec.md, the MCP shells out to `swc-workload --version`
+    and reads stdout directly.
+    """
+    long_form = _run("--version")
+    assert long_form.returncode == 0
+    assert long_form.stdout.strip() == "1.2.0", (
+        f"`--version` must emit bare `1.2.0`, got {long_form.stdout!r}"
+    )
+
+    short_form = _run("-v")
+    assert short_form.returncode == 0
+    assert short_form.stdout.strip() == "1.2.0", (
+        f"`-v` must emit bare `1.2.0`, got {short_form.stdout!r}"
+    )
+
+
 def test_subcommand_help_describes_flags():
     result = _run("add", "--help")
     assert result.returncode == 0
