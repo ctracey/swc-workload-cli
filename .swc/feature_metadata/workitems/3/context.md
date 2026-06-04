@@ -1,0 +1,14 @@
+## Pass 1 — 2026-06-04
+
+- **3.1 done.** Added `swc_workload/meta.py` with `parse_bool_flag` and `parse_meta_json`. Strict casefolded match for the bool parser; two-message split for the JSON parser (`--meta must be valid JSON: ...` vs `--meta must be a JSON object, got <type>`) per solution.md. 26 unit tests in `tests/unit/test_meta.py` cover the case-insensitive accept set, the strict reject set (including whitespace / 0 / 1 / yes), nested-object preservation, and every non-object JSON variant.
+- **Decision:** `_json_type_name` returns JSON-flavoured names (`array`, `object`, `string`, `number`, `boolean`, `null`) so error messages match how callers think about JSON, not Python types.
+- **3.2 done.** `AddCommand.execute` now builds nodes with `"meta": meta` (default `{}`). Verified via `tests/e2e/test_swc-workload_meta.py::test_add_default_writes_meta_*` — top-level, `to`, and `at` placements all default to `{}`, and the legacy-sibling case (REQ-07) keeps the existing legacy item meta-less while still defaulting `{}` on the new sibling.
+- **3.3 done.** Reads work against a legacy fixture (no `meta` on items) — `list`, `find`, `summary`, and `list --json` all exit 0 and the on-disk bytes stay identical (REQ-05). The `_validate_shape` change pins REQ-10: an item carrying `meta` that isn't a JSON object is rejected with `'meta' must be an object at <path>.meta` (unit pin in `tests/unit/test_validate_shape_meta.py`).
+- **Decision:** `_validate_shape`'s new `meta` check is positioned right after the required-fields loop and before recursing into `children` — consistent with the existing "fail at first violation, with JSON-path" pattern.
+- **3.4 done.** `--meta <json>` wired on `AddCommand.add_arguments` with `default=None`, parsed up front through `parse_meta_json` so a bad value errors before `load_workload_from_args` is even called (so the `workload.json` is never touched on the error paths). Coverage in `test_swc-workload_meta.py`: malformed JSON, array, string, number, boolean, and null all exit non-zero with the appropriate message AND leave the workload unchanged. `add --json` shape pinned unchanged (`{id, title, status}`) — adding `meta` echo is item 5's job per solution.md.
+- **Decision:** Parse `--meta` *before* `load_workload_from_args` rather than after, so the error path never touches disk. Cleaner than rolling back a partial write.
+- **3.5 done.** Defensive e2e coverage in the same file verifies `rename`, `delete` (sibling preservation), `move` (both `to` and direction forms), and the three status transitions all leave a non-trivial `meta` byte-for-byte identical. No implementation changes needed — `meta` rides along as a dict key through every in-place mutation.
+
+## Suite
+
+- 159 tests passing (`uv run pytest`). Pre-existing pin `test_add_json_emits_id_title_status` still green — the `add --json` shape did not regress.

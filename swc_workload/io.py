@@ -78,6 +78,11 @@ def _validate_shape(data) -> None:
                     fail(f"missing required field '{field}'", node_path)
                 if not isinstance(node[field], expected_type):
                     fail(f"'{field}' must be a {type_name}", f"{node_path}.{field}")
+            # `meta` is optional. Pre-1.2.0 artefacts don't carry it (REQ-05),
+            # but when present it MUST be a JSON object (REQ-10) so callers
+            # can rely on the shape downstream.
+            if "meta" in node and not isinstance(node["meta"], dict):
+                fail("'meta' must be an object", f"{node_path}.meta")
             walk(node["children"], f"{node_path}.children")
 
     walk(data["items"], "<root>.items")

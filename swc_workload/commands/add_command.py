@@ -9,6 +9,7 @@ from typing import Optional
 
 from ..cli_error import CLIError
 from ..io import load_workload_from_args, save_workload
+from ..meta import parse_meta_json
 from ..status import STATUS_NOT_STARTED, rollup
 from ..tree import all_ids, check_no_sibling_title_collision, find_by_ref, make_id
 from ..validation import validate_title
@@ -56,10 +57,24 @@ class AddCommand(Command):
             metavar="[ref]",
             help="Parent or position reference. Required when `to` / `at` is supplied.",
         )
+        parser.add_argument(
+            "--meta",
+            dest="meta",
+            default=None,
+            metavar="<json>",
+            help=(
+                "JSON object stored verbatim as the item's meta. Defaults to "
+                "an empty object when omitted."
+            ),
+        )
 
     def execute(self, args) -> int:
         title = args.title
         validate_title(title)
+
+        # Parse --meta up front so we fail before loading / mutating workload.json
+        # if the supplied JSON is invalid or non-object.
+        meta: dict = {} if args.meta is None else parse_meta_json(args.meta)
 
         placement = args.placement
         target = args.target
@@ -109,7 +124,13 @@ class AddCommand(Command):
         check_no_sibling_title_collision(title, children)
 
         new_id = make_id(title, existing)
-        node = {"id": new_id, "title": title, "status": STATUS_NOT_STARTED, "children": []}
+        node = {
+            "id": new_id,
+            "title": title,
+            "status": STATUS_NOT_STARTED,
+            "children": [],
+            "meta": meta,
+        }
         if insert_idx is None:
             children.append(node)
         else:

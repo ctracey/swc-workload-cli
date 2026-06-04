@@ -1,0 +1,5 @@
+{
+  "workloads": {
+    "feature/metadata": "feature_metadata"
+  }
+}
