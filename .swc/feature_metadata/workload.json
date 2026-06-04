@@ -1,0 +1,299 @@
+{
+  "items": [
+    {
+      "id": "ecf2652",
+      "title": "Refactor cli.py into a cleaner module layout (target shape TBD in breakdown)",
+      "status": "done",
+      "children": [
+        {
+          "id": "bb8f4be",
+          "title": "Phase A1 \u2014 extract errors.py (CLIError)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "b98c56b",
+          "title": "Phase A2 \u2014 extract io.py (load/save/validate workload.json + friendly OSError wrap)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "86b4e0c",
+          "title": "Phase A3 \u2014 extract tree.py (make_id, all_ids, iter_items, find_by_ref, sibling-collision); update unit test import",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "26cd756",
+          "title": "Phase A4 \u2014 extract status.py (derive_parent_status, rollup, _rollup_ancestors, set_status)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "a50d4fa",
+          "title": "Phase A5 \u2014 extract validation.py (validate_title)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "5f51c5f",
+          "title": "Phase A6 \u2014 extract output.py (render_text, to_json_tree, item renderers)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "b089fce",
+          "title": "Phase A7 \u2014 extract filters.py (parse_filter, apply_filters, normalise_status)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "5a06f76",
+          "title": "Phase B1 \u2014 add commands/base.py with Command base class; commands/__init__.py with empty ALL",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "f60c9de",
+          "title": "Phase B2 \u2014 rewire cli.py:main() to dispatch through ALL (empty list, no behaviour change)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "307c5c1",
+          "title": "Phase C1 \u2014 migrate exists to ExistsCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "110558f",
+          "title": "Phase C2 \u2014 migrate init to InitCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "07a0120",
+          "title": "Phase C3 \u2014 migrate summary to SummaryCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "4087bdb",
+          "title": "Phase C4 \u2014 migrate find to FindCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "730e9a5",
+          "title": "Phase C5 \u2014 migrate list to ListCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "0e2f31e",
+          "title": "Phase C6 \u2014 migrate reset / start / complete to sibling classes calling status.set_status",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "88c8206",
+          "title": "Phase C7 \u2014 migrate add to AddCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "c90f316",
+          "title": "Phase C8 \u2014 migrate rename to RenameCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "72844ae",
+          "title": "Phase C9 \u2014 migrate delete to DeleteCommand class",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "8b2345c",
+          "title": "Phase C10 \u2014 migrate move to MoveCommand class (cli.py now slim)",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "21c4653",
+      "title": "Bump version to 1.2.0 and surface via --version",
+      "status": "done",
+      "children": [
+        {
+          "id": "a1cc63e",
+          "title": "Verify --version flag exists (add if missing) \u2014 wire to _version.py",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "0b7dfca",
+          "title": "Bump _version.py from 1.1.3 to 1.2.0",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "a1a59cc",
+          "title": "E2E test \u2014 `swc-workload --version` outputs `1.2.0`",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "366c408",
+      "title": "meta field foundation \u2014 default {}, read tolerance, add --meta <json>",
+      "status": "done",
+      "children": [
+        {
+          "id": "b921d9c",
+          "title": "Scaffold swc_workload/meta.py module + shared --meta/--ids bool parser",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "323194e",
+          "title": "New items default to meta: {} on creation (unit + e2e)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "b6cff6f",
+          "title": "Reads tolerate pre-existing items without meta (e2e against legacy fixture)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "9b141bf",
+          "title": "add --meta <json> \u2014 JSON object stored verbatim",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "b09348a",
+          "title": "Defensive test \u2014 rename, delete, move preserve existing meta",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "1125ba0",
+      "title": "New subcommands \u2014 get, update-meta, find-by-meta",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "2f4b73c",
+          "title": "Dotted-path parser/resolver helpers in meta.py (unit-tested)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "dfbcf97",
+          "title": "get <ref> [--meta true|false] \u2014 default true, single-object JSON, errors on miss",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "9dea386",
+          "title": "update-meta <ref> <path> <json-value> \u2014 replace-not-merge, empty path = root, intermediate object creation",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "9a54853",
+          "title": "find-by-meta <path> [--meta true|false] \u2014 presence mode, default --meta false",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "4bacb08",
+          "title": "find-by-meta <path> <pattern> [--meta true|false] \u2014 path + regex on string values; missing path / non-string \u2192 no match",
+          "status": "not-started",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "03e4763",
+      "title": "Changed reads \u2014 --meta on list/find/summary; --ids on list (remove --no-ids)",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "197f5a6",
+          "title": "list --meta true|false (default false)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "ba58059",
+          "title": "list --ids true|false replaces --no-ids (switch removed)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "e1905e1",
+          "title": "find --meta true|false (default false)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "3485a41",
+          "title": "summary --meta true|false (default false)",
+          "status": "not-started",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "5147c08",
+      "title": "Atomic transitions \u2014 --meta <json> on start, complete, reset",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "b1eb384",
+          "title": "start --meta <json> \u2014 multi-path writes atomic with status flip",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "d2b1f7b",
+          "title": "complete --meta <json> \u2014 same shape",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "fdbe2e8",
+          "title": "reset --meta <json> \u2014 same shape",
+          "status": "not-started",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "abdb44a",
+      "title": "Docs + release notes",
+      "status": "not-started",
+      "children": [
+        {
+          "id": "1e4e8a2",
+          "title": "README \u2014 caller convention (vendor:purpose, no . in namespace), --ids migration, breaking-change notice",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "8c50c06",
+          "title": "CHANGELOG entry for 1.2.0",
+          "status": "not-started",
+          "children": []
+        }
+      ]
+    }
+  ]
+}
