@@ -41,7 +41,7 @@ def build_parser() -> argparse.ArgumentParser:
         "-v",
         "--version",
         action="version",
-        version=f"%(prog)s {__version__}",
+        version=f"{__version__}",
     )
 
     sub = p.add_subparsers(dest="op", required=True, metavar="<op>")
