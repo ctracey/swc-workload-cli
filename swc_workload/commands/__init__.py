@@ -12,7 +12,9 @@ from .command import Command
 from .complete_command import CompleteCommand
 from .delete_command import DeleteCommand
 from .exists_command import ExistsCommand
+from .find_by_meta_command import FindByMetaCommand
 from .find_command import FindCommand
+from .get_command import GetCommand
 from .init_command import InitCommand
 from .list_command import ListCommand
 from .move_command import MoveCommand
@@ -20,6 +22,7 @@ from .rename_command import RenameCommand
 from .reset_command import ResetCommand
 from .start_command import StartCommand
 from .summary_command import SummaryCommand
+from .update_meta_command import UpdateMetaCommand
 
 ALL: list[Command] = [
     InitCommand(),
@@ -27,6 +30,8 @@ ALL: list[Command] = [
     ListCommand(),
     FindCommand(),
     SummaryCommand(),
+    GetCommand(),
+    FindByMetaCommand(),
     AddCommand(),
     RenameCommand(),
     DeleteCommand(),
@@ -34,4 +39,5 @@ ALL: list[Command] = [
     ResetCommand(),
     StartCommand(),
     CompleteCommand(),
+    UpdateMetaCommand(),
 ]
