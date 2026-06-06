@@ -9,7 +9,7 @@ from __future__ import annotations
 import pytest
 
 from swc_workload.cli_error import CLIError
-from swc_workload.meta import parse_bool_flag, parse_meta_json
+from swc_workload.meta import parse_bool_flag, parse_meta_json, parse_meta_object
 
 
 # ---------------------------------------------------------------------------
@@ -105,3 +105,54 @@ def test_parse_meta_json_rejects_non_object_values(value):
     msg = str(excinfo.value).lower()
     # Solution.md mandates a "must be a JSON object" framing.
     assert "object" in msg
+
+
+# ---------------------------------------------------------------------------
+# F-01 (pass 2) — parse_meta_json keeps its `--meta` framing for backward
+# compatibility, but the underlying parser is now label-aware so callers
+# (notably `update-meta` empty-path) can surface the correct positional name.
+# ---------------------------------------------------------------------------
+
+
+def test_parse_meta_json_error_messages_keep_meta_flag_label():
+    """`parse_meta_json` is the entry point used by `--meta <json>` callers
+    (`add`, `start`/`complete`/`reset` in item 6). Its error messages MUST
+    continue to name the `--meta` flag verbatim so MCP integration tests
+    that grep for that string keep working.
+    """
+    # JSON parse failure path.
+    with pytest.raises(CLIError) as excinfo:
+        parse_meta_json("{not-json}")
+    assert "--meta" in str(excinfo.value)
+
+    # Non-object path.
+    with pytest.raises(CLIError) as excinfo:
+        parse_meta_json('"a string"')
+    assert "--meta" in str(excinfo.value)
+
+
+def test_parse_meta_object_uses_supplied_label_in_errors():
+    """`parse_meta_object(raw, label)` is the flag-agnostic core: callers
+    pick the label so the user sees the argument they actually typed.
+    """
+    # Custom label propagated through the parse-failure path.
+    with pytest.raises(CLIError) as excinfo:
+        parse_meta_object("{not-json}", label="<json-value>")
+    msg = str(excinfo.value)
+    assert "<json-value>" in msg
+    assert "--meta" not in msg
+    assert "json" in msg.lower()
+
+    # Custom label propagated through the non-object path.
+    with pytest.raises(CLIError) as excinfo:
+        parse_meta_object('"a string"', label="<json-value>")
+    msg = str(excinfo.value)
+    assert "<json-value>" in msg
+    assert "--meta" not in msg
+    assert "object" in msg.lower()
+
+
+def test_parse_meta_object_returns_parsed_object():
+    """Happy path mirrors parse_meta_json."""
+    assert parse_meta_object('{"a": 1}', label="<json-value>") == {"a": 1}
+    assert parse_meta_object("{}", label="<json-value>") == {}

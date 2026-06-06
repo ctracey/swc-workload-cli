@@ -6,7 +6,7 @@ import argparse
 import json
 
 from ..io import load_workload_from_args
-from ..output import STATUS_SYMBOLS, SYM_NOT_STARTED
+from ..output import render_match_entry, render_match_line
 from ..tree import iter_items
 from .command import Command
 
@@ -36,22 +36,12 @@ class FindCommand(Command):
                 matches.append((item, number))
 
         if args.json:
-            out = [
-                {
-                    "id": item["id"],
-                    "number": ".".join(str(n) for n in number),
-                    "title": item["title"],
-                    "status": item["status"],
-                }
-                for item, number in matches
-            ]
+            out = [render_match_entry(item, number) for item, number in matches]
             print(json.dumps({"matches": out}))
         else:
             if not matches:
                 print(f"no matches for {args.keyword!r}")
             else:
                 for item, number in matches:
-                    num_str = ".".join(str(n) for n in number)
-                    sym = STATUS_SYMBOLS.get(item["status"], SYM_NOT_STARTED)
-                    print(f"{sym} {num_str} ({item['id']}) {item['title']}")
+                    print(render_match_line(item, number))
         return 0

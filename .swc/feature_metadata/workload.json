@@ -186,35 +186,114 @@
     {
       "id": "1125ba0",
       "title": "New subcommands \u2014 get, update-meta, find-by-meta",
-      "status": "not-started",
+      "status": "done",
       "children": [
         {
           "id": "2f4b73c",
           "title": "Dotted-path parser/resolver helpers in meta.py (unit-tested)",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "dfbcf97",
           "title": "get <ref> [--meta true|false] \u2014 default true, single-object JSON, errors on miss",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "9dea386",
           "title": "update-meta <ref> <path> <json-value> \u2014 replace-not-merge, empty path = root, intermediate object creation",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "9a54853",
           "title": "find-by-meta <path> [--meta true|false] \u2014 presence mode, default --meta false",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "4bacb08",
           "title": "find-by-meta <path> <pattern> [--meta true|false] \u2014 path + regex on string values; missing path / non-string \u2192 no match",
+          "status": "done",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "447a0ab",
+      "title": "Refinements & improvements",
+      "status": "in-progress",
+      "children": [
+        {
+          "id": "69f4314",
+          "title": "F-02 \u2014 get --json: project meta onto nested children, or pin asymmetry with a test (consider during item 5)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "a7ba140",
+          "title": "F-03 \u2014 extract render_match_entry / render_match_line into output.py; shared by find and find-by-meta (natural pivot: item 5)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "8a1dae8",
+          "title": "F-04 \u2014 meta.read_at_path: add docstring note that empty path returns the live root dict by reference (or copy at empty-path branch if external callers appear)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "05eecdc",
+          "title": "F-05 \u2014 meta.write_at_path: reorder the missing-segment check before the existing-value lookup (cosmetic)",
+          "status": "done",
+          "children": []
+        },
+        {
+          "id": "3c10d44",
+          "title": "update-meta help with examples for object value and string value",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "4ce349c",
+          "title": "update find-by-meta docs on how to check attribute exists (path & no value)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "33b90e5",
+          "title": "update find-by-meta docs with examples for attribute existence, path value",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "4e31d1e",
+          "title": "update find-by-meta with array support",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "565290e",
+          "title": "make sure root reference is consistent & documented (find & update)",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "44fdde7",
+          "title": "consolidate find & find-by-meta",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "e6f3cb7",
+          "title": "consolidate rename & update-meta",
+          "status": "not-started",
+          "children": []
+        },
+        {
+          "id": "172eac4",
+          "title": "update --json to always include meta and remove need for --meta; update help docs",
           "status": "not-started",
           "children": []
         }

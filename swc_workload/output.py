@@ -61,6 +61,23 @@ def render_item_json(item: dict, number: tuple[int, ...]) -> dict:
     }
 
 
+def render_match_entry(item: dict, number: tuple[int, ...]) -> dict:
+    """Return a JSON-serialisable dict for one search match (find / find-by-meta)."""
+    return {
+        "id": item["id"],
+        "number": ".".join(str(n) for n in number),
+        "title": item["title"],
+        "status": item["status"],
+    }
+
+
+def render_match_line(item: dict, number: tuple[int, ...]) -> str:
+    """Return the single text line for one search match (find / find-by-meta)."""
+    num_str = ".".join(str(n) for n in number)
+    sym = STATUS_SYMBOLS.get(item["status"], SYM_NOT_STARTED)
+    return f"{sym} {num_str} ({item['id']}) {item['title']}"
+
+
 def render_item_text(item: dict, number: tuple[int, ...], show_ids: bool) -> str:
     lines: list[str] = []
     root_number = item.get("_number") or number
