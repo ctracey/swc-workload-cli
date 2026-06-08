@@ -75,13 +75,13 @@ META SUBPATH  (path = "meta.<dotted-path>")
     update 1 meta.active true            # stores boolean true (valid JSON)
     update 1 meta.review '{"status":"approved","by":"alice"}'
     update 1 meta.swc:status.stage plan
-    update 1 meta.tags[0] python         # write first element
-    update 1 meta.steps[0].name build    # nested array index
+    update 1 'meta.tags[0]' python       # write first element
+    update 1 'meta.steps[0].name' build  # nested array index
 
   To store the string "true" rather than the boolean, use JSON quoting:
     update 1 meta.flag '"true"'
 
-  Note: quote bracket paths in zsh to prevent glob expansion.
+  Note: bracket paths must be quoted in zsh to prevent glob expansion.
 
 RESTRICTIONS
   id and number cannot be updated.
