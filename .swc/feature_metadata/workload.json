@@ -364,12 +364,12 @@
     {
       "id": "abdb44a",
       "title": "Docs + release notes",
-      "status": "not-started",
+      "status": "in-progress",
       "children": [
         {
           "id": "1e4e8a2",
           "title": "README \u2014 caller convention (vendor:purpose, no . in namespace), --ids migration, breaking-change notice",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
