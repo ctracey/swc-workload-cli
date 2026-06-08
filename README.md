@@ -187,4 +187,12 @@ happens to be on PATH. The entry-point smoke test in
 registered the `swc-workload` console script; it fails with a clear
 "run `pip install -e .`" message if you skip the install step.
 
+To run the local source directly (outside of tests):
+
+```
+uv run python -m swc_workload <args>
+```
+
+For example: `uv run python -m swc_workload --help`
+
 No git, network, or other external state required.
