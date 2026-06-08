@@ -21,8 +21,6 @@ from .update_command import UpdateCommand
 from .reset_command import ResetCommand
 from .start_command import StartCommand
 from .summary_command import SummaryCommand
-from .update_meta_command import UpdateMetaCommand
-
 ALL: list[Command] = [
     InitCommand(),
     ExistsCommand(),
@@ -37,5 +35,4 @@ ALL: list[Command] = [
     ResetCommand(),
     StartCommand(),
     CompleteCommand(),
-    UpdateMetaCommand(),
 ]

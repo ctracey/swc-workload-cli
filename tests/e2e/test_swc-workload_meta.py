@@ -311,7 +311,7 @@ def test_update_preserves_existing_meta_byte_for_byte(swcw_ready):
     run, workload = swcw_ready
     run("add", "alpha", "--meta", json.dumps(NONTRIVIAL_META))
 
-    result = run("update", "1", "renamed")
+    result = run("update", "1", "title", "renamed")
     assert result.returncode == 0, result.stderr
 
     on_disk = json.loads(workload.read_text())
