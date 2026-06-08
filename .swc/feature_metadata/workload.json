@@ -276,7 +276,7 @@
         {
           "id": "565290e",
           "title": "make sure root reference is consistent & documented (find & update)",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
@@ -295,6 +295,12 @@
           "id": "172eac4",
           "title": "update --json to always include meta and remove need for --meta; update help docs",
           "status": "done",
+          "children": []
+        },
+        {
+          "id": "25fd613",
+          "title": "reconsider start, complete, reset post update",
+          "status": "not-started",
           "children": []
         }
       ]
