@@ -25,7 +25,68 @@ takes `--workload <folder>` and operates on `<folder>/workload.json`.
 swc-workload <op> --workload <folder> [args]
 ```
 
-Run `swc-workload --help` for the full subcommand list.
+Run `swc-workload --help` for the full subcommand list, or
+`swc-workload <op> --help` for detailed usage and examples for any command.
+
+## Commands
+
+| Command | What it does |
+|---------|-------------|
+| `init` | Initialise a workload folder |
+| `exists` | Check whether a workload exists (exit 0/1) |
+| `list` | Render the tree; filter/exclude by status; scope to a subtree ref |
+| `find` | Search by title substring, or by meta path (presence + regex) |
+| `summary` | Count items by status |
+| `get` | Fetch a single item as JSON |
+| `add` | Add a new item (append or insert at position) |
+| `update` | Update title, status, or a meta path on an item |
+| `delete` | Remove an item and its children |
+| `move` | Re-order or re-parent an item |
+
+All commands accept `--json` for structured output. Run `swc-workload <cmd> --help` to see the full argument list and examples.
+
+## Meta field
+
+Every item carries a `meta` field — a free-form JSON object for caller-owned data.
+New items default to `meta: {}`. Legacy items without a `meta` field are read
+without error and gain the field on their first write.
+
+**Reading meta:** `get` and all `--json` outputs always include the full `meta` blob.
+`find --meta <path>` searches across items by meta content (presence or regex pattern).
+
+**Writing meta:**
+```
+swc-workload update <ref> meta.<path> <value>  --workload <folder>
+swc-workload update <ref> meta        <json>   --workload <folder>  # replace root
+```
+
+Values are parsed as JSON first; plain text falls back to a string, so `update 1 meta.stage plan` works without shell quoting. See `swc-workload update --help` for full examples including array index writes (`meta.tags[0]`).
+
+**Caller convention:** use `vendor:purpose` as the top-level namespace for meta keys to avoid collisions between tools. The `:` character is a literal segment separator — do not use `.` in namespace names since `.` is the path separator for `find --meta` and `update meta.*`.
+
+```
+# Good — colon-namespaced
+update 1 meta.swc:status.stage plan
+
+# Avoid — dot in namespace clashes with path traversal
+update 1 meta.swc.status.stage plan   # reads as path swc → status → stage
+```
+
+## Breaking changes from 1.1.x
+
+The 1.2.0 release consolidates several commands. Callers should migrate:
+
+| Old command | 1.2.0 equivalent |
+|-------------|-----------------|
+| `rename <ref> <title>` | `update <ref> title <title>` |
+| `start <ref>` | `update <ref> status in-progress` |
+| `complete <ref>` | `update <ref> status done` |
+| `reset <ref>` | `update <ref> status not-started` |
+| `update-meta <ref> <path> <value>` | `update <ref> meta.<path> <value>` |
+| `update-meta <ref> "" <json>` | `update <ref> meta <json>` |
+| `find-by-meta <path> [pattern]` | `find --meta <path> [pattern]` |
+
+Status aliases (`todo`, `wip`, `complete`) are accepted by `update status`.
 
 ## Installation
 
