@@ -41,6 +41,7 @@ def to_json_tree(items: list[dict]) -> list[dict]:
                 "number": ".".join(str(n) for n in number),
                 "title": node["title"],
                 "status": node["status"],
+                "meta": node.get("meta", {}),
                 "children": walk(node.get("children", []), number),
             })
         return out
@@ -54,6 +55,7 @@ def render_item_json(item: dict, number: tuple[int, ...]) -> dict:
         "number": ".".join(str(n) for n in item_number),
         "title": item["title"],
         "status": item["status"],
+        "meta": item.get("meta", {}),
         "children": [
             render_item_json(c, item_number + (i + 1,))
             for i, c in enumerate(item.get("children", []))
@@ -68,6 +70,7 @@ def render_match_entry(item: dict, number: tuple[int, ...]) -> dict:
         "number": ".".join(str(n) for n in number),
         "title": item["title"],
         "status": item["status"],
+        "meta": item.get("meta", {}),
     }
 
 

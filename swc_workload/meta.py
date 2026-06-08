@@ -28,7 +28,10 @@ clobber co-resident data.
 from __future__ import annotations
 
 import json
+import re as _re
 from typing import Any
+
+_BRACKET_IDX_RE = _re.compile(r"\[(\d+)\]")
 
 from .cli_error import CLIError
 
@@ -112,16 +115,28 @@ def parse_path(raw: str) -> tuple[str, ...]:
     """Split a dotted path into a tuple of segments.
 
     - ``""`` returns ``()`` (root).
-    - Otherwise split on ``.``; segments are kept verbatim (``:`` and other
-      punctuation are valid segment characters per the spec).
+    - Segments are split on ``.``; ``:`` and other punctuation are valid
+      segment characters per the spec.
+    - ``[N]`` bracket notation is expanded into a separate index segment so
+      that ``tags[0]`` and ``tags[0].name`` work naturally.
+      ``tags[0]`` → ``("tags", "0")``;
+      ``steps[0].name`` → ``("steps", "0", "name")``.
 
     No further validation is performed — adjacent dots / empty segments are
-    preserved as-is. Path-segment validity (existence in ``meta``) is the
-    job of ``read_at_path`` / ``write_at_path``.
+    preserved as-is. Path-segment validity is the job of ``read_at_path`` /
+    ``write_at_path``.
     """
     if raw == "":
         return ()
-    return tuple(raw.split("."))
+    segments: list[str] = []
+    for part in raw.split("."):
+        if "[" not in part:
+            segments.append(part)
+        else:
+            for seg in _BRACKET_IDX_RE.split(part):
+                if seg:  # skip empty artifacts from split
+                    segments.append(seg)
+    return tuple(segments)
 
 
 def read_at_path(meta: dict, path: tuple[str, ...]) -> tuple[bool, Any]:
@@ -134,18 +149,29 @@ def read_at_path(meta: dict, path: tuple[str, ...]) -> tuple[bool, Any]:
       ``(False, None)``.
     - Present value (including falsy values: ``None``, ``0``, ``False``,
       ``""``) → ``(True, value)``.
+    - Array intermediates are traversed by integer index (``"0"``, ``"1"``
+      …). A non-integer segment on a list, or an out-of-bounds index, is
+      a miss.
 
-    Note: a non-object intermediate is treated as a *miss* for reads
-    (matches the spec's "predictable find-by-meta" guarantee). Writes are
-    asymmetric — see ``write_at_path``.
+    Note: a non-object, non-array intermediate is treated as a *miss* for
+    reads. Writes are asymmetric — see ``write_at_path``.
     """
     cursor: Any = meta
     for segment in path:
-        if not isinstance(cursor, dict):
+        if isinstance(cursor, list):
+            try:
+                idx = int(segment)
+            except ValueError:
+                return (False, None)
+            if idx < 0 or idx >= len(cursor):
+                return (False, None)
+            cursor = cursor[idx]
+        elif isinstance(cursor, dict):
+            if segment not in cursor:
+                return (False, None)
+            cursor = cursor[segment]
+        else:
             return (False, None)
-        if segment not in cursor:
-            return (False, None)
-        cursor = cursor[segment]
     return (True, cursor)
 
 
