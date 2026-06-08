@@ -223,7 +223,7 @@
     {
       "id": "447a0ab",
       "title": "Refinements & improvements",
-      "status": "in-progress",
+      "status": "done",
       "children": [
         {
           "id": "69f4314",
@@ -300,7 +300,7 @@
         {
           "id": "25fd613",
           "title": "reconsider start, complete, reset post update",
-          "status": "not-started",
+          "status": "done",
           "children": []
         }
       ]
