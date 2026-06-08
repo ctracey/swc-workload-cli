@@ -339,24 +339,24 @@
     {
       "id": "5147c08",
       "title": "Atomic transitions \u2014 --meta <json> on start, complete, reset",
-      "status": "not-started",
+      "status": "done",
       "children": [
         {
           "id": "b1eb384",
           "title": "start --meta <json> \u2014 multi-path writes atomic with status flip",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "d2b1f7b",
           "title": "complete --meta <json> \u2014 same shape",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "fdbe2e8",
           "title": "reset --meta <json> \u2014 same shape",
-          "status": "not-started",
+          "status": "done",
           "children": []
         }
       ]
