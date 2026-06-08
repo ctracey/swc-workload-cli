@@ -17,7 +17,7 @@ from .get_command import GetCommand
 from .init_command import InitCommand
 from .list_command import ListCommand
 from .move_command import MoveCommand
-from .rename_command import RenameCommand
+from .update_command import UpdateCommand
 from .reset_command import ResetCommand
 from .start_command import StartCommand
 from .summary_command import SummaryCommand
@@ -31,7 +31,7 @@ ALL: list[Command] = [
     SummaryCommand(),
     GetCommand(),
     AddCommand(),
-    RenameCommand(),
+    UpdateCommand(),
     DeleteCommand(),
     MoveCommand(),
     ResetCommand(),

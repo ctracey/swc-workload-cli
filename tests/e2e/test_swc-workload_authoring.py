@@ -252,11 +252,11 @@ def test_delete_drops_item_and_descendants_with_renumber(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# rename — REQ-06 / REQ-07
+# update (title) — REQ-06 / REQ-07
 # ---------------------------------------------------------------------------
 
 
-def test_rename_preserves_id_status_position(swcw_ready):
+def test_update_preserves_id_status_position(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     run("add", "two")
@@ -268,7 +268,7 @@ def test_rename_preserves_id_status_position(swcw_ready):
     before = json.loads(run("list", "--json").stdout)["items"]
     target_id = before[1]["children"][2]["id"]
 
-    result = run("rename", "2.3", "new title")
+    result = run("update", "2.3", "new title")
     assert result.returncode == 0, result.stderr
 
     after = json.loads(run("list", "--json").stdout)["items"]
@@ -279,21 +279,21 @@ def test_rename_preserves_id_status_position(swcw_ready):
     assert target["number"] == "2.3"
 
 
-def test_rename_rejects_dotted_number_prefix(swcw_ready):
+def test_update_rejects_dotted_number_prefix(swcw_ready):
     run, workload = swcw_ready
     run("add", "first")
-    result = run("rename", "1", "2.3 new title")
+    result = run("update", "1", "2.3 new title")
     assert result.returncode != 0
     items = json.loads(run("list", "--json").stdout)["items"]
     assert items[0]["title"] == "first"
 
 
-def test_rename_rejects_duplicate_sibling_title(swcw_ready):
-    """Renaming an item to a sibling's title is rejected (case-insensitive)."""
+def test_update_rejects_duplicate_sibling_title(swcw_ready):
+    """Updating an item to a sibling's title is rejected (case-insensitive)."""
     run, workload = swcw_ready
     run("add", "alpha")
     run("add", "beta")
-    result = run("rename", "2", "ALPHA")
+    result = run("update", "2", "ALPHA")
     assert result.returncode != 0
     msg = result.stderr.lower()
     assert "collide" in msg or "alpha" in msg
@@ -302,33 +302,33 @@ def test_rename_rejects_duplicate_sibling_title(swcw_ready):
     assert items[1]["title"] == "beta"
 
 
-def test_rename_allows_no_op_self_rename(swcw_ready):
-    """Renaming an item to its current title is a no-op, not a collision."""
+def test_update_allows_no_op_self_rename(swcw_ready):
+    """Updating an item to its current title is a no-op, not a collision."""
     run, workload = swcw_ready
     run("add", "alpha")
-    result = run("rename", "1", "alpha")
+    result = run("update", "1", "alpha")
     assert result.returncode == 0, result.stderr
 
 
-def test_rename_allows_case_change_of_own_title(swcw_ready):
-    """Renaming an item to a case-variant of its own title is allowed
+def test_update_allows_case_change_of_own_title(swcw_ready):
+    """Updating an item to a case-variant of its own title is allowed
     (the item is excluded from its own collision check)."""
     run, workload = swcw_ready
     run("add", "alpha")
-    result = run("rename", "1", "ALPHA")
+    result = run("update", "1", "ALPHA")
     assert result.returncode == 0, result.stderr
     items = json.loads(run("list", "--json").stdout)["items"]
     assert items[0]["title"] == "ALPHA"
 
 
-def test_rename_allows_same_title_as_non_sibling(swcw_ready):
-    """Renaming to a title that exists elsewhere in the tree (but not as a
+def test_update_allows_same_title_as_non_sibling(swcw_ready):
+    """Updating to a title that exists elsewhere in the tree (but not as a
     sibling) is allowed."""
     run, workload = swcw_ready
     run("add", "alpha")  # 1
     run("add", "beta")   # 2
     run("add", "gamma", "to", "1")  # 1.1
-    result = run("rename", "2", "gamma")  # not a sibling of 1.1
+    result = run("update", "2", "gamma")  # not a sibling of 1.1
     assert result.returncode == 0, result.stderr
 
 
@@ -586,12 +586,12 @@ def test_delete_json_emits_deleted_ref(swcw_ready):
     assert payload == {"deleted": "1"}
 
 
-def test_rename_json_emits_id_and_new_title(swcw_ready):
+def test_update_json_emits_id_and_new_title(swcw_ready):
     run, workload = swcw_ready
     run("add", "one")
     target_id = json.loads(run("list", "--json").stdout)["items"][0]["id"]
 
-    result = run("rename", "1", "renamed", "--json")
+    result = run("update", "1", "renamed", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["id"] == target_id
