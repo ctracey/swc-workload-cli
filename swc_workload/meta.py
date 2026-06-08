@@ -180,36 +180,82 @@ def write_at_path(meta: dict, path: tuple[str, ...], value: Any) -> None:
 
     - Missing intermediate objects are created as ``{}``.
     - Existing leaf at the final segment is replaced wholly (no merge).
-    - Empty path is invalid here — the caller (``update-meta`` with
-      empty path) handles whole-meta replacement directly.
-    - Raises ``CLIError`` when an intermediate segment exists and is
-      not a dict (would silently clobber co-resident data).
-
-    The asymmetry with ``read_at_path`` is intentional: writes are
-    explicit user intent, so unexpected non-object intermediates are
-    surfaced rather than silently overwritten.
+    - Empty path is invalid here — callers handle whole-meta replacement
+      directly.
+    - Array intermediates are traversed by integer index (``"0"``, ``"1"`` …).
+      Out-of-bounds index or non-integer segment on an array → ``CLIError``.
+      New array elements cannot be created; only existing indices may be written.
+    - Raises ``CLIError`` when an intermediate segment exists and is not a
+      dict or list (would silently clobber co-resident data).
     """
     if not path:
         raise CLIError(
             "write_at_path requires a non-empty path; "
             "callers must handle empty-path replacement directly."
         )
-    cursor: dict = meta
+    cursor: Any = meta
     for i, segment in enumerate(path[:-1]):
-        if segment not in cursor:
-            new_child: dict = {}
-            cursor[segment] = new_child
-            cursor = new_child
-            continue
-        existing = cursor[segment]
-        if not isinstance(existing, dict):
-            traversed = ".".join(path[: i + 1])
+        if isinstance(cursor, list):
+            try:
+                idx = int(segment)
+            except ValueError:
+                traversed = ".".join(path[:i])
+                raise CLIError(
+                    f"cannot traverse array at '{traversed}' with "
+                    f"non-integer segment '{segment}'"
+                ) from None
+            if idx < 0 or idx >= len(cursor):
+                traversed = ".".join(path[: i + 1])
+                raise CLIError(
+                    f"array index {idx} out of bounds at '{traversed}' "
+                    f"(length {len(cursor)})"
+                )
+            nxt = cursor[idx]
+            if not isinstance(nxt, (dict, list)):
+                traversed = ".".join(path[: i + 1])
+                raise CLIError(
+                    f"cannot traverse non-object value at meta path "
+                    f"'{traversed}' (existing value is {_json_type_name(nxt)})"
+                )
+            cursor = nxt
+        elif isinstance(cursor, dict):
+            if segment not in cursor:
+                new_child: dict = {}
+                cursor[segment] = new_child
+                cursor = new_child
+                continue
+            existing = cursor[segment]
+            if not isinstance(existing, (dict, list)):
+                traversed = ".".join(path[: i + 1])
+                raise CLIError(
+                    f"cannot traverse non-object value at meta path "
+                    f"'{traversed}' (existing value is {_json_type_name(existing)})"
+                )
+            cursor = existing
+        else:
+            traversed = ".".join(path[:i])
             raise CLIError(
-                f"cannot traverse non-object value at meta path "
-                f"'{traversed}' (existing value is {_json_type_name(existing)})"
+                f"cannot traverse scalar value at meta path '{traversed}'"
             )
-        cursor = existing
-    cursor[path[-1]] = value
+    # Final write — cursor is now the parent container.
+    if isinstance(cursor, list):
+        try:
+            idx = int(path[-1])
+        except ValueError:
+            traversed = ".".join(path[:-1])
+            raise CLIError(
+                f"cannot write to array at '{traversed}' with "
+                f"non-integer segment '{path[-1]}'"
+            ) from None
+        if idx < 0 or idx >= len(cursor):
+            traversed = ".".join(path)
+            raise CLIError(
+                f"array index {idx} out of bounds at '{traversed}' "
+                f"(length {len(cursor)})"
+            )
+        cursor[idx] = value
+    else:
+        cursor[path[-1]] = value
 
 
 def _json_type_name(value: Any) -> str:
