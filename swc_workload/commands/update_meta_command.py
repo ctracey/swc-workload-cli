@@ -15,14 +15,31 @@ from .command import Command
 class UpdateMetaCommand(Command):
     name = "update-meta"
     help = "Write a JSON value at a dotted path inside an item's meta."
-    description = (
-        "Write `<json-value>` at the dotted `<path>` inside the item's `meta`. "
-        "Replace-not-merge at every depth — writing a JSON object at a subtree "
-        "replaces the subtree wholly. Empty `<path>` replaces the whole `meta` "
-        "(value MUST be a JSON object). Missing intermediate objects are "
-        "created. An intermediate that exists but is not an object is rejected "
-        "to protect co-resident data."
-    )
+    description = """\
+Write `<json-value>` at the dotted `<path>` inside the item's `meta`.
+Replace-not-merge at every depth — writing a JSON object at a subtree
+replaces the subtree wholly. Empty `<path>` replaces the whole `meta`
+(value MUST be a JSON object). Missing intermediate objects are
+created. An intermediate that exists but is not an object is rejected
+to protect co-resident data.
+
+EXAMPLES
+  # String value
+  update-meta 1 owner '"alice"'
+
+  # Number value
+  update-meta 1 priority '2'
+
+  # Object value — replaces the whole subtree at that path
+  update-meta 1 review '{"status": "approved", "by": "alice"}'
+
+  # Nested path — creates intermediate objects as needed
+  update-meta 1 swc.stage '"implement"'
+
+  # Replace the whole meta root (empty path — value must be an object)
+  update-meta 1 "" '{"owner": "alice", "priority": 1}'
+"""
+    formatter_class = argparse.RawDescriptionHelpFormatter
 
     def add_arguments(self, parser: argparse.ArgumentParser) -> None:
         parser.add_argument("ref", help=self.ref_help)

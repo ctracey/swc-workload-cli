@@ -252,19 +252,19 @@
         {
           "id": "3c10d44",
           "title": "update-meta help with examples for object value and string value",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "4ce349c",
           "title": "update find-by-meta docs on how to check attribute exists (path & no value)",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
           "id": "33b90e5",
           "title": "update find-by-meta docs with examples for attribute existence, path value",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
