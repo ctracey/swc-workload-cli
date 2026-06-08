@@ -12,7 +12,6 @@ from .command import Command
 from .complete_command import CompleteCommand
 from .delete_command import DeleteCommand
 from .exists_command import ExistsCommand
-from .find_by_meta_command import FindByMetaCommand
 from .find_command import FindCommand
 from .get_command import GetCommand
 from .init_command import InitCommand
@@ -31,7 +30,6 @@ ALL: list[Command] = [
     FindCommand(),
     SummaryCommand(),
     GetCommand(),
-    FindByMetaCommand(),
     AddCommand(),
     RenameCommand(),
     DeleteCommand(),
