@@ -370,16 +370,16 @@ def test_move_direction_preserves_meta(swcw_ready):
     assert children[0]["meta"] == NONTRIVIAL_META
 
 
-def test_start_complete_reset_preserve_meta(swcw_ready):
+def test_status_transitions_preserve_meta(swcw_ready):
     """Status transitions touch `status` only — `meta` must round-trip intact."""
     run, workload = swcw_ready
     run("add", "thing", "--meta", json.dumps(NONTRIVIAL_META))
 
-    assert run("start", "1").returncode == 0
+    assert run("update", "1", "status", "in-progress").returncode == 0
     assert _meta_of(workload, 0) == NONTRIVIAL_META
 
-    assert run("complete", "1").returncode == 0
+    assert run("update", "1", "status", "done").returncode == 0
     assert _meta_of(workload, 0) == NONTRIVIAL_META
 
-    assert run("reset", "1").returncode == 0
+    assert run("update", "1", "status", "not-started").returncode == 0
     assert _meta_of(workload, 0) == NONTRIVIAL_META

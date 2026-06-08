@@ -33,7 +33,7 @@ def test_update_title_changes_title(swcw_ready):
 def test_update_title_preserves_id_and_status(swcw_ready):
     run, workload = swcw_ready
     run("add", "original")
-    run("start", "1")
+    run("update", "1", "status", "in-progress")
     before_id = json.loads(run("list", "--json").stdout)["items"][0]["id"]
     run("update", "1", "title", "new title")
     item = json.loads(run("list", "--json").stdout)["items"][0]
@@ -93,7 +93,7 @@ def test_update_status_alias_wip(swcw_ready):
 def test_update_status_alias_todo(swcw_ready):
     run, workload = swcw_ready
     run("add", "item")
-    run("start", "1")
+    run("update", "1", "status", "in-progress")
     result = run("update", "1", "status", "todo")
     assert result.returncode == 0, result.stderr
     assert json.loads(run("list", "--json").stdout)["items"][0]["status"] == "not-started"
