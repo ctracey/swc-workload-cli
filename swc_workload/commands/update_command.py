@@ -1,4 +1,4 @@
-"""`rename` — rename a work item; preserves id, status, parent, and position."""
+"""`update` — update a work item's title; preserves id, status, parent, and position."""
 
 from __future__ import annotations
 
@@ -12,11 +12,11 @@ from ..validation import validate_title
 from .command import Command
 
 
-class RenameCommand(Command):
-    name = "rename"
-    help = "Rename a work item."
+class UpdateCommand(Command):
+    name = "update"
+    help = "Update a work item's title."
     description = (
-        "Rename a work item. The hash ID, status, parent, and position are "
+        "Update a work item's title. The hash ID, status, parent, and position are "
         "preserved. Titles must not start with a number-prefix pattern."
     )
 
@@ -41,5 +41,5 @@ class RenameCommand(Command):
         if args.json:
             print(json.dumps({"id": item["id"], "title": args.title}))
         else:
-            print(f"renamed [{item['id']}] -> {args.title}")
+            print(f"updated [{item['id']}] -> {args.title}")
         return 0

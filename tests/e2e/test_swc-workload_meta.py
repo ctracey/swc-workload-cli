@@ -287,7 +287,7 @@ def test_add_json_output_shape_unchanged_when_meta_supplied(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# 3.5 — rename / delete / move / status preserve existing meta (REQ-06)
+# 3.5 — update / delete / move / status preserve existing meta (REQ-06)
 # ---------------------------------------------------------------------------
 
 
@@ -307,17 +307,17 @@ def _meta_of(workload_path, *indices):
     return node["meta"]
 
 
-def test_rename_preserves_existing_meta_byte_for_byte(swcw_ready):
+def test_update_preserves_existing_meta_byte_for_byte(swcw_ready):
     run, workload = swcw_ready
     run("add", "alpha", "--meta", json.dumps(NONTRIVIAL_META))
 
-    result = run("rename", "1", "renamed")
+    result = run("update", "1", "renamed")
     assert result.returncode == 0, result.stderr
 
     on_disk = json.loads(workload.read_text())
-    renamed = on_disk["items"][0]
-    assert renamed["title"] == "renamed"
-    assert renamed["meta"] == NONTRIVIAL_META
+    updated = on_disk["items"][0]
+    assert updated["title"] == "renamed"
+    assert updated["meta"] == NONTRIVIAL_META
 
 
 def test_delete_sibling_preserves_remaining_items_meta(swcw_ready):
