@@ -364,7 +364,7 @@
     {
       "id": "abdb44a",
       "title": "Docs + release notes",
-      "status": "in-progress",
+      "status": "done",
       "children": [
         {
           "id": "1e4e8a2",
@@ -375,7 +375,7 @@
         {
           "id": "8c50c06",
           "title": "CHANGELOG entry for 1.2.0",
-          "status": "not-started",
+          "status": "done",
           "children": []
         }
       ]
