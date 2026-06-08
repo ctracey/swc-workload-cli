@@ -308,7 +308,7 @@
     {
       "id": "03e4763",
       "title": "Changed reads \u2014 --meta on list/find/summary; --ids on list (remove --no-ids)",
-      "status": "in-progress",
+      "status": "done",
       "children": [
         {
           "id": "197f5a6",
@@ -319,7 +319,7 @@
         {
           "id": "ba58059",
           "title": "list --ids true|false replaces --no-ids (switch removed)",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
