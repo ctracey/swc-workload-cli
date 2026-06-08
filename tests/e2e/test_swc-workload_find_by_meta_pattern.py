@@ -86,7 +86,6 @@ def test_find_by_meta_pattern_silently_skips_non_string_leaf(swcw_ready):
     payload = json.loads(result.stdout)
     titles = [m["title"] for m in payload["matches"]]
     assert titles == ["a"]
-    # And stderr should be empty.
     assert result.stderr == "" or result.stderr.strip() == ""
 
 
@@ -155,11 +154,12 @@ def test_find_by_meta_invalid_regex_errors_with_json_flag(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# Pattern mode with --meta flag (independent of presence mode)
+# Pattern mode — meta always included in JSON output
 # ---------------------------------------------------------------------------
 
 
-def test_find_by_meta_pattern_default_omits_meta(swcw_ready):
+def test_find_by_meta_pattern_json_includes_meta(swcw_ready):
+    """JSON output always carries the full meta blob."""
     run, workload = swcw_ready
     run("add", "alpha", "--meta", '{"k":"alpha"}')
 
@@ -167,18 +167,101 @@ def test_find_by_meta_pattern_default_omits_meta(swcw_ready):
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     match = payload["matches"][0]
-    assert "meta" not in match
+    assert match["meta"] == {"k": "alpha"}
 
 
-def test_find_by_meta_pattern_meta_true_includes_meta(swcw_ready):
+# ---------------------------------------------------------------------------
+# Array support — pattern matches any string element in an array leaf
+# ---------------------------------------------------------------------------
+
+
+def test_find_by_meta_pattern_matches_string_element_in_array(swcw_ready):
+    """Pattern mode hits when any string element of an array leaf matches."""
     run, workload = swcw_ready
-    run("add", "alpha", "--meta", '{"k":"alpha"}')
+    run("add", "alpha", "--meta", '{"tags":["python","web"]}')
+    run("add", "beta", "--meta", '{"tags":["java","web"]}')
 
-    result = run("find-by-meta", "k", "alpha", "--meta", "true", "--json")
+    result = run("find-by-meta", "tags", "python", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    match = payload["matches"][0]
-    assert match["meta"] == {"k": "alpha"}
+    titles = [m["title"] for m in payload["matches"]]
+    assert titles == ["alpha"]
+
+
+def test_find_by_meta_pattern_array_all_elements_checked(swcw_ready):
+    """Any element in the array can satisfy the pattern."""
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"tags":["python","web"]}')
+
+    result = run("find-by-meta", "tags", "web", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert len(payload["matches"]) == 1
+
+
+def test_find_by_meta_pattern_array_non_string_elements_skipped(swcw_ready):
+    """Non-string elements in an array are silently skipped; string ones still match."""
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"tags":["hit",42,true,null]}')
+
+    result = run("find-by-meta", "tags", "hit", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert len(payload["matches"]) == 1
+
+
+def test_find_by_meta_pattern_whole_array_matched_as_json_string(swcw_ready):
+    """Pattern can match the whole array's JSON string representation."""
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"a":[1,2,3]}')
+    run("add", "beta", "--meta", '{"a":[4,5,6]}')
+
+    result = run("find-by-meta", "a", r"^\[1, 2, 3\]$", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    titles = [m["title"] for m in payload["matches"]]
+    assert titles == ["alpha"]
+
+
+def test_find_by_meta_pattern_numeric_array_elements_match_via_json_string(swcw_ready):
+    """Numeric elements in an array are coerced to JSON string for matching."""
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"tags":[1,2,3]}')
+
+    result = run("find-by-meta", "tags", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert len(payload["matches"]) == 1
+
+
+def test_find_by_meta_pattern_scalar_leaf_matched_as_json_string(swcw_ready):
+    """Number / bool / null at the leaf is coerced to JSON string for matching."""
+    run, workload = swcw_ready
+    run("add", "a", "--meta", '{"count":42}')
+    run("add", "b", "--meta", '{"flag":true}')
+    run("add", "c", "--meta", '{"val":null}')
+
+    r1 = run("find-by-meta", "count", "42", "--json")
+    assert json.loads(r1.stdout)["matches"][0]["title"] == "a"
+
+    r2 = run("find-by-meta", "flag", "true", "--json")
+    assert json.loads(r2.stdout)["matches"][0]["title"] == "b"
+
+    r3 = run("find-by-meta", "val", "null", "--json")
+    assert json.loads(r3.stdout)["matches"][0]["title"] == "c"
+
+
+def test_find_by_meta_pattern_index_into_array_via_path(swcw_ready):
+    """Bracket notation indexes into an array — matches the indexed element."""
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"tags":["python","web"]}')
+    run("add", "beta", "--meta", '{"tags":["java","web"]}')
+
+    result = run("find-by-meta", "tags[0]", "python", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    titles = [m["title"] for m in payload["matches"]]
+    assert titles == ["alpha"]
 
 
 # ---------------------------------------------------------------------------

@@ -228,7 +228,7 @@
         {
           "id": "69f4314",
           "title": "F-02 \u2014 get --json: project meta onto nested children, or pin asymmetry with a test (consider during item 5)",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
@@ -270,7 +270,7 @@
         {
           "id": "4e31d1e",
           "title": "update find-by-meta with array support",
-          "status": "not-started",
+          "status": "done",
           "children": []
         },
         {
@@ -294,7 +294,7 @@
         {
           "id": "172eac4",
           "title": "update --json to always include meta and remove need for --meta; update help docs",
-          "status": "not-started",
+          "status": "done",
           "children": []
         }
       ]

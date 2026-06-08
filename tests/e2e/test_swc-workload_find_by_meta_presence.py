@@ -1,14 +1,13 @@
 """Tier 1 — e2e tests for `find-by-meta <path>` (presence mode).
 
-Work item 4.4 — covers REQ-10, REQ-13 (default + `--meta true`),
-REQ-15 (`find-by-meta` half), REQ-17 (presence shape).
+Work item 4.4 — covers REQ-10, REQ-13, REQ-15 (`find-by-meta` half),
+REQ-17 (presence shape).
 
 Presence mode: match items where the dotted `<path>` resolves to any
 value inside the item's `meta` — including falsy values (`None`, `0`,
 `False`, `""`). The output shape mirrors `find`: `{matches: [...]}`.
 
-`--meta true|false` controls whether each match entry includes the
-item's full `meta` blob; default is `false`.
+JSON output always includes the `meta` blob for each match entry.
 """
 
 from __future__ import annotations
@@ -49,7 +48,6 @@ def test_find_by_meta_presence_at_empty_path_matches_items_with_meta(swcw_ready)
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     titles = sorted(m["title"] for m in payload["matches"])
-    # Both A and B have a meta field (even if {}).
     assert titles == ["alpha", "beta"]
 
 
@@ -103,76 +101,78 @@ def test_find_by_meta_presence_includes_descendants(swcw_ready):
 
 
 # ---------------------------------------------------------------------------
-# REQ-13 — --meta true|false controls inclusion of the meta blob
+# REQ-13 — meta blob always included in JSON output
 # ---------------------------------------------------------------------------
 
 
-def test_find_by_meta_default_omits_meta_blob(swcw_ready):
-    """Spec table: `find-by-meta` defaults to `--meta false`."""
+def test_find_by_meta_json_always_includes_meta_blob(swcw_ready):
+    """JSON output always carries the full meta blob — no flag required."""
     run, workload = swcw_ready
     run("add", "alpha", "--meta", '{"k":"v"}')
 
     result = run("find-by-meta", "k", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    match = payload["matches"][0]
-    assert "meta" not in match, "default for find-by-meta must be --meta false"
-
-
-def test_find_by_meta_meta_true_includes_meta_blob(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "alpha", "--meta", '{"k":"v"}')
-
-    result = run("find-by-meta", "k", "--meta", "true", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     match = payload["matches"][0]
     assert match["meta"] == {"k": "v"}
 
 
-def test_find_by_meta_meta_false_explicit_omits(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "alpha", "--meta", '{"k":"v"}')
-
-    result = run("find-by-meta", "k", "--meta", "false", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    match = payload["matches"][0]
-    assert "meta" not in match
-
-
-def test_find_by_meta_invalid_meta_flag_value_errors(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "alpha", "--meta", '{"k":"v"}')
-    result = run("find-by-meta", "k", "--meta", "maybe", "--json")
-    assert result.returncode != 0
-
-
 # ---------------------------------------------------------------------------
-# Match-entry shape — {id, number, title, status[, meta]}
+# Match-entry shape — {id, number, title, status, meta}
 # ---------------------------------------------------------------------------
 
 
-def test_find_by_meta_match_entry_shape_default(swcw_ready):
+def test_find_by_meta_match_entry_shape(swcw_ready):
     run, workload = swcw_ready
     run("add", "alpha", "--meta", '{"k":"v"}')
     result = run("find-by-meta", "k", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     match = payload["matches"][0]
-    assert set(match.keys()) == {"id", "number", "title", "status"}
+    assert set(match.keys()) == {"id", "number", "title", "status", "meta"}
     assert match["title"] == "alpha"
     assert match["number"] == "1"
+    assert match["meta"] == {"k": "v"}
 
 
-def test_find_by_meta_match_entry_shape_with_meta(swcw_ready):
+# ---------------------------------------------------------------------------
+# Array support — presence and index traversal
+# ---------------------------------------------------------------------------
+
+
+def test_find_by_meta_presence_array_leaf_is_a_hit(swcw_ready):
+    """An array value at the path counts as present."""
     run, workload = swcw_ready
-    run("add", "alpha", "--meta", '{"k":"v"}')
-    result = run("find-by-meta", "k", "--meta", "true", "--json")
+    run("add", "alpha", "--meta", '{"tags":["python","web"]}')
+    run("add", "beta", "--meta", '{"other":"value"}')
+
+    result = run("find-by-meta", "tags", "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    match = payload["matches"][0]
-    assert set(match.keys()) == {"id", "number", "title", "status", "meta"}
+    titles = [m["title"] for m in payload["matches"]]
+    assert titles == ["alpha"]
+
+
+def test_find_by_meta_presence_array_index_traversal(swcw_ready):
+    """Bracket notation indexes into an array."""
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"tags":["python","web"]}')
+
+    result = run("find-by-meta", "tags[0]", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    titles = [m["title"] for m in payload["matches"]]
+    assert titles == ["alpha"]
+
+
+def test_find_by_meta_presence_array_out_of_bounds_is_miss(swcw_ready):
+    run, workload = swcw_ready
+    run("add", "alpha", "--meta", '{"tags":["python"]}')
+
+    result = run("find-by-meta", "tags[1]", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload == {"matches": []}
 
 
 # ---------------------------------------------------------------------------
@@ -295,7 +295,6 @@ def test_find_by_meta_text_output_with_matches(swcw_ready):
     run("add", "alpha", "--meta", '{"k":"v"}')
     result = run("find-by-meta", "k")
     assert result.returncode == 0, result.stderr
-    # `sym N (id) title` pattern from find.
     assert "alpha" in result.stdout
     assert "1" in result.stdout
 

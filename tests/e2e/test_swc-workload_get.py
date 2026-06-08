@@ -1,10 +1,10 @@
 """Tier 1 — e2e tests for the `get <ref>` subcommand (1.2.0, work item 4.2).
 
-Covers REQ-01, REQ-02, REQ-03, REQ-15 (`get` half), REQ-17.
+Covers REQ-01, REQ-02, REQ-15 (`get` half), REQ-17.
 
 `get <ref>` returns a single item by ref (number or hash). JSON output is a
-single object — NOT wrapped in `{items: [...]}` like `list`. `--meta` is a
-true/false flag defaulting to `true`.
+single object — NOT wrapped in `{items: [...]}` like `list`. `meta` is always
+included in JSON output; legacy items without a meta field project `meta: {}`.
 """
 
 from __future__ import annotations
@@ -59,6 +59,20 @@ def test_get_includes_children_recursively(swcw_ready):
     child = payload["children"][0]
     assert child["title"] == "child"
     assert child["number"] == "1.1"
+    assert child["meta"] == {"depth": 1}
+
+
+def test_get_includes_meta_on_children(swcw_ready):
+    """Children carry their own meta in JSON output — no asymmetry with the root."""
+    run, workload = swcw_ready
+    run("add", "parent", "--meta", '{"p":1}')
+    run("add", "child", "to", "1", "--meta", '{"c":2}')
+
+    result = run("get", "1", "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["meta"] == {"p": 1}
+    assert payload["children"][0]["meta"] == {"c": 2}
 
 
 def test_get_by_subtree_number_works(swcw_ready):
@@ -99,52 +113,6 @@ def test_get_unknown_hash_exits_non_zero(swcw_ready):
     result = run("get", "deadbee")
     assert result.returncode != 0
     assert workload.read_text() == snapshot
-
-
-# ---------------------------------------------------------------------------
-# REQ-03 — --meta false omits the meta key
-# ---------------------------------------------------------------------------
-
-
-def test_get_meta_false_omits_meta_key(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "first", "--meta", '{"k":"v"}')
-
-    result = run("get", "1", "--meta", "false", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert "meta" not in payload, "--meta false must omit the meta key"
-    # Everything else still present.
-    assert payload["title"] == "first"
-
-
-def test_get_meta_true_explicit_includes_meta(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "first", "--meta", '{"k":"v"}')
-
-    result = run("get", "1", "--meta", "true", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["meta"] == {"k": "v"}
-
-
-def test_get_meta_default_is_true(swcw_ready):
-    """Spec table: `get` defaults to `--meta true`."""
-    run, workload = swcw_ready
-    run("add", "first", "--meta", '{"k":"v"}')
-
-    result = run("get", "1", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert "meta" in payload, "default for get must be --meta true"
-    assert payload["meta"] == {"k": "v"}
-
-
-def test_get_invalid_meta_flag_value_errors(swcw_ready):
-    run, workload = swcw_ready
-    run("add", "first")
-    result = run("get", "1", "--meta", "maybe", "--json")
-    assert result.returncode != 0
 
 
 # ---------------------------------------------------------------------------
@@ -196,16 +164,6 @@ def test_get_against_legacy_item_does_not_rewrite_bytes(swcw):
     assert workload.read_text() == snapshot, "get rewrote workload.json"
 
 
-def test_get_against_legacy_item_with_meta_false_still_works(swcw):
-    run, workload = swcw
-    _write_legacy(workload)
-
-    result = run("get", "1", "--meta", "false", "--json")
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert "meta" not in payload
-
-
 # ---------------------------------------------------------------------------
 # Text output sanity — symbol + number + id + title
 # ---------------------------------------------------------------------------
@@ -216,7 +174,6 @@ def test_get_text_output_includes_id_and_title(swcw_ready):
     run("add", "first")
     result = run("get", "1")
     assert result.returncode == 0, result.stderr
-    # Should look like the `list <ref>` rendering — one item line with id + title.
     assert "first" in result.stdout
 
 
@@ -230,6 +187,5 @@ def test_get_json_output_parses_in_single_loads(swcw_ready):
     run("add", "first", "--meta", '{"k":"v"}')
     result = run("get", "1", "--json")
     assert result.returncode == 0
-    # Just one parse — no trailing newlines or extra chunks.
     payload = json.loads(result.stdout)
     assert isinstance(payload, dict)

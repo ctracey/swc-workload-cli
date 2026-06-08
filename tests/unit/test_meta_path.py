@@ -51,6 +51,11 @@ from swc_workload.meta import (
         # Empty segments produced by adjacent dots are preserved as-is —
         # no validation beyond emptiness rules per solution.md.
         ("a..b", ("a", "", "b")),
+        # Bracket notation for array indices.
+        ("tags[0]", ("tags", "0")),
+        ("steps[0].name", ("steps", "0", "name")),
+        ("a[0][1]", ("a", "0", "1")),
+        ("a.b[2].c", ("a", "b", "2", "c")),
     ],
 )
 def test_parse_path_splits_on_dot(raw, expected):
@@ -118,6 +123,39 @@ def test_read_at_path_with_namespace_segment():
     """Colon is a literal segment character — `swc:status` is one segment."""
     meta = {"swc:status": {"stage": "plan"}}
     assert read_at_path(meta, ("swc:status", "stage")) == (True, "plan")
+
+
+def test_read_at_path_array_integer_index():
+    """Integer segment indexes into a list."""
+    assert read_at_path({"tags": ["a", "b", "c"]}, ("tags", "0")) == (True, "a")
+    assert read_at_path({"tags": ["a", "b", "c"]}, ("tags", "2")) == (True, "c")
+
+
+def test_read_at_path_array_at_root_level():
+    """Top-level list traversal (unusual but supported)."""
+    meta = {"items": [{"name": "foo"}, {"name": "bar"}]}
+    assert read_at_path(meta, ("items", "1", "name")) == (True, "bar")
+
+
+def test_read_at_path_array_out_of_bounds_is_miss():
+    assert read_at_path({"tags": ["a"]}, ("tags", "1")) == (False, None)
+    assert read_at_path({"tags": []}, ("tags", "0")) == (False, None)
+
+
+def test_read_at_path_array_non_integer_segment_is_miss():
+    assert read_at_path({"tags": ["a", "b"]}, ("tags", "name")) == (False, None)
+
+
+def test_read_at_path_array_negative_index_is_miss():
+    """Negative indices are not supported — treated as miss."""
+    assert read_at_path({"tags": ["a", "b"]}, ("tags", "-1")) == (False, None)
+
+
+def test_read_at_path_array_value_at_leaf_is_found():
+    """A path resolving to an array is a valid hit — type is up to the caller."""
+    found, value = read_at_path({"tags": ["a", "b"]}, ("tags",))
+    assert found is True
+    assert value == ["a", "b"]
 
 
 def test_read_at_path_does_not_mutate_input():
