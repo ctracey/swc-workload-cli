@@ -105,8 +105,8 @@ def test_list_renders_full_tree_with_symbols(swcw_ready):
     run("add", "one")
     run("add", "two")
     run("add", "2a", "to", "2")
-    run("complete", "1")
-    run("start", "2.1")
+    run("update", "1", "status", "done")
+    run("update", "2.1", "status", "in-progress")
 
     result = run("list")
     assert result.returncode == 0
@@ -126,8 +126,8 @@ def test_list_filter_status_in_progress(swcw_ready):
     run("add", "a")
     run("add", "b")
     run("add", "c")
-    run("complete", "1")
-    run("start", "2")
+    run("update", "1", "status", "done")
+    run("update", "2", "status", "in-progress")
 
     result = run("list", "--filter", "status:in-progress", "--json")
     assert result.returncode == 0
@@ -143,8 +143,8 @@ def test_list_exclude_status_done(swcw_ready):
     run("add", "a")
     run("add", "b")
     run("add", "c")
-    run("complete", "1")
-    run("start", "2")
+    run("update", "1", "status", "done")
+    run("update", "2", "status", "in-progress")
 
     result = run("list", "--exclude", "status:done", "--json")
     assert result.returncode == 0
@@ -186,7 +186,7 @@ def test_list_with_ref_and_filter_scopes_to_subtree(swcw_ready):
     run("add", "a", "to", "1")
     run("add", "b", "to", "1")
     run("add", "c", "to", "1")
-    run("start", "1.2")
+    run("update", "1.2", "status", "in-progress")
 
     result = run("list", "1", "--filter", "status:in-progress", "--json")
     assert result.returncode == 0, result.stderr
@@ -209,7 +209,7 @@ def test_list_filter_preserves_original_numbering(swcw_ready):
     run("add", "c1", "to", "3")
     run("add", "c2", "to", "3")
     run("add", "c3", "to", "3")
-    run("start", "3.2")
+    run("update", "3.2", "status", "in-progress")
 
     # JSON form: deeply-nested match keeps its original 3.2 number.
     result = run("list", "--filter", "status:in-progress", "--json")
@@ -239,7 +239,7 @@ def test_list_with_ref_and_filter_preserves_original_numbering(swcw_ready):
     run("add", "a", "to", "1")
     run("add", "b", "to", "1")
     run("add", "c", "to", "1")
-    run("start", "1.2")
+    run("update", "1.2", "status", "in-progress")
 
     result = run("list", "1", "--filter", "status:in-progress", "--json")
     assert result.returncode == 0, result.stderr
@@ -258,9 +258,9 @@ def test_summary_partial(swcw_ready):
     for i in range(10):
         run("add", f"item {i}")
     for i in range(1, 5):
-        run("complete", str(i))
+        run("update", str(i), "status", "done")
     for i in range(5, 8):
-        run("start", str(i))
+        run("update", str(i), "status", "in-progress")
 
     result = run("summary", "--json")
     assert result.returncode == 0
@@ -275,7 +275,7 @@ def test_summary_text_includes_wip(swcw_ready):
     run, workload = swcw_ready
     run("add", "a")
     run("add", "b")
-    run("start", "1")
+    run("update", "1", "status", "in-progress")
     result = run("summary")
     assert result.returncode == 0
     assert "wip=1" in result.stdout
